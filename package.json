@@ -1,0 +1,33 @@
+{
+  "name": "melchett",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bbc/melchett.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bbc/melchett/issues"
+  },
+  "homepage": "https://github.com/bbc/melchett#readme",
+  "dependencies": {
+    "@hapi/catbox": "^10.2.1",
+    "@hapi/catbox-memory": "^4.1.0",
+    "@types/node": "^12.0.10",
+    "split": "^1.0.1",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^3.5.2",
+    "ts-jest": "^24.0.0",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.14.0",
+    "tslint-config-standard": "^8.0.1"
+  }
+}
