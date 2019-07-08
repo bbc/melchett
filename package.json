@@ -2,9 +2,10 @@
   "name": "melchett",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "tsc",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -20,14 +21,19 @@
     "@hapi/catbox": "^10.2.1",
     "@hapi/catbox-memory": "^4.1.0",
     "@types/node": "^12.0.10",
+    "@types/split": "^1.0.0",
+    "axios-cache-adapter": "^2.3.3",
+    "axios-cache-plugin": "^0.1.0",
     "split": "^1.0.1",
-    "winston": "^3.2.1"
+    "winston": "^2.3.0"
   },
   "devDependencies": {
-    "typescript": "^3.5.2",
-    "ts-jest": "^24.0.0",
+    "@types/jest": "^24.0.15",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
     "ts-node": "^7.0.1",
     "tslint": "^5.14.0",
-    "tslint-config-standard": "^8.0.1"
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.5.2"
   }
 }
