@@ -1,10 +1,11 @@
 // import { Client as Catbox } from  '@hapi/catbox';
 // import Memory from '@hapi/catbox-memory';
 const axios = require('axios');
-import wrapper from 'axios-cache-plugin'
+// import wrapper from 'axios-cache-plugin'
 // import { setupCache } from 'axios-cache-adapter'
 
 import { logger } from '../common/logger';
+import { doNotVaryHeaders } from '../common/doNotVaryHeaders';
 
 const USER_AGENT = 'itv/' + process.env.npm_package_name + '/' + process.env.npm_package_version;
 const TIMEOUT = 1500;
@@ -44,7 +45,7 @@ export class HttpClient {
     this.client = axios.create({
       timeout: TIMEOUT,
       headers: {
-        'User-Agent' : USER_AGENT,
+        'User-Agent': USER_AGENT,
       }
     });
 
@@ -53,36 +54,62 @@ export class HttpClient {
   private handler(type: HandlerMethod, url: string, headers = {}, requestId: string, body?: any) {
     if (requestId) headers['X-Correlation-Id'] = requestId;
     const logParts = { url, client: this.name, type: 'upstream', requestId };
-
-    //header munging remove do not varies from headers (a la flashheart)
-
+    
+    let newHeaders = doNotVaryHeaders(headers, DO_NOT_VARY);
+    
     const successHandler = (response) => {
-      console.log(response.data);
+      // console.log(Object.keys(response.data));
+      // console.log(response.status);
+      // console.log(response.statusText);
+      // console.log(response.headers);
+      // console.log(response.config);
+      let logData = logHandler(logParts, response);
+      console.log('The log Data', logData);
+      logger.info(logData);
+
       return response.data;
     };
 
     const errorHandler = (error) => {
-      console.log(error);
+      if(error.response) {
+        
+        
+        
+        
+        // console.log(error.response);
+        let logData = logHandler(logParts, error.response);
+        console.log('The Error log Data', logData);
+        logger.info(logData);
+      }
 
     }
 
+    const logHandler = (logParts, response) => {
+      let duration = response.headers['x-response-time'];
+      let statusCode = response.status;
+      let contentLength = response.headers['content-length'];
+
+      return {
+        ...logParts, duration, statusCode, contentLength
+      }
+
+    }
+
+
     if (type === HandlerMethod.POST) {
-      return this.client.post(url, body, {
-        headers
-      })
+      return this.client.post(url, body, { newHeaders })
         .then(successHandler)
         .catch(errorHandler);
     }
     else {
 
-        return this.client.get(url, { headers })
+      return this.client.get(url, { newHeaders })
         .then(successHandler)
         .catch(errorHandler);
     }
   }
 
   get(url: string, requestId: string, headers?: object): Promise<any> {
-    console.log('url', url);
     return this.handler(HandlerMethod.GET, url, headers, requestId);
   }
 

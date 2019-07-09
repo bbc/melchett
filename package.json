@@ -5,7 +5,8 @@
   "main": "dist/lib/index.js",
   "scripts": {
     "compile": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "dev": "watch 'npm run compile' lib"
   },
   "repository": {
     "type": "git",
@@ -30,10 +31,12 @@
   "devDependencies": {
     "@types/jest": "^24.0.15",
     "jest": "^24.8.0",
+    "npm": "^6.10.0",
     "ts-jest": "^24.0.2",
     "ts-node": "^7.0.1",
     "tslint": "^5.14.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.5.2"
+    "typescript": "^3.5.2",
+    "watch": "^1.0.2"
   }
 }
