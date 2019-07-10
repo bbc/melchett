@@ -12,10 +12,10 @@ const TIMEOUT = 1500;
 // const TIMEOUT_CATCH = (TIMEOUT * 1000) * 2 + 500;
 const DO_NOT_VARY = ['X-Amzn-Trace-Id', 'X-Correlation-Id', 'response-id'];
 
-// const isCircuitBreakerOpen = (error: HttpClientError) => /Circuit breaker is open/.test(error.message);
-// const didTimeout = (error: HttpClientError) => /ETIMEDOUT/.test(error.message);
-// const didSocketTimeout = (error: HttpClientError) => /ESOCKETTIMEDOUT/.test(error.message);
-// const hasCertificateError = (error: HttpClientError) => /certificate/.test(error.message);
+const isCircuitBreakerOpen = (error: HttpClientError) => /Circuit breaker is open/.test(error.message);
+const didTimeout = (error: HttpClientError) => /ETIMEDOUT/.test(error.message);
+const didSocketTimeout = (error: HttpClientError) => /ESOCKETTIMEDOUT/.test(error.message);
+const hasCertificateError = (error: HttpClientError) => /certificate/.test(error.message);
 
 interface HttpClientConfig {
   name: string
@@ -75,22 +75,14 @@ export class HttpClient {
           }
         
         }
+        else if (isCircuitBreakerOpen(error)) {
+          customError = {
+            name: `ECIRCUITBREAKER`,
+            message: `Circuit breaker is open for ${this.name}`
+          }
+        }
         
       
-      //   if (err) {
-      //     if (err.statusCode) {
-      //       const errorBody = err.body;
-      //       let error = JSON.stringify(errorBody);
-      //       if (errorBody && errorBody.error) {
-      //         error = errorBody.error.details;
-      //       }
-      //       return customReject({
-      //         name: `ESTATUS${err.statusCode}`,
-      //         message: `Status code ${err.statusCode} received for ${url}`,
-      //         details: error || ''
-      //       });
-      //     }
-
       //     if (isCircuitBreakerOpen(err)) {
       //       return customReject({
       //         name: `ECIRCUITBREAKER`,
