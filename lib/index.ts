@@ -1,3 +1,4 @@
+// const config = require('../config/config.json')
 // import { Client as Catbox } from  '@hapi/catbox';
 // import Memory from '@hapi/catbox-memory';
 const axios = require('axios');
@@ -48,15 +49,31 @@ export class HttpClient {
         'User-Agent': USER_AGENT,
       }
     });
-
+    
+    //intercept the response to check for malformed responses
+    this.client.interceptors.response.use(function (response) {
+      if (typeof response.data === undefined) {
+        return Promise.reject(new Error('Response data is undefined'));
+      } 
+      return response;
+      }, 
+      function(error) {
+        return Promise.reject(error);
+      }
+    );
+    
   }
+
 
   private handler(type: HandlerMethod, url: string, headers = {}, requestId: string, body?: any) {
     if (requestId) headers['X-Correlation-Id'] = requestId;
     const logParts = { url, client: this.name, type: 'upstream', requestId };
     
     let newHeaders = stripHeaders(headers, DO_NOT_VARY);
+    let customError = {}
+
     
+
     const successHandler = (response) => {
       let logData = logHandler(logParts, response);
       logger.info(logData);
@@ -64,8 +81,7 @@ export class HttpClient {
     };
 
     const errorHandler = (error) => {
-      console.log('Failed', error);
-      let customError = {}
+      // console.log('Failed', error);
       if(error.response) {
         if(error.response.status) {
           customError = {
@@ -81,65 +97,36 @@ export class HttpClient {
             message: `Circuit breaker is open for ${this.name}`
           }
         }
-        
+        else if (didTimeout(error)) {
+          customError = {
+            name: `ETIMEOUT`,
+            message: `Request timed out while requesting ${this.name} data`
+          }
+        }
+        else if (didSocketTimeout(error)) {
+          customError = {
+            name: `ESOCKETTIMEDOUT`,
+            message: `Socket timed out while requesting ${this.name} data`
+          }
+        }
+        else if(hasCertificateError(error)) {
+          customError = {
+            name: `ECERTIFICATE`,
+            message: `Certificate error while requesting ${this.name} data`
+          }
+        }
+        else {
+          customError = {
+            name: `EUNKNOWN`,
+            message: error.message
+          }
+        }
       
-      //     if (isCircuitBreakerOpen(err)) {
-      //       return customReject({
-      //         name: `ECIRCUITBREAKER`,
-      //         message: `Circuit breaker is open for ${this.name}`
-      //       });
-      //     }
-
-      //     if (didTimeout(err)) {
-      //       return customReject({
-      //         name: `ETIMEOUT`,
-      //         message: `Request timed out while requesting ${this.name} data`
-      //       });
-      //     }
-
-      //     if (didSocketTimeout(err)) {
-      //       return customReject({
-      //         name: `ESOCKETTIMEDOUT`,
-      //         message: `Socket timed out while requesting ${this.name} data`
-      //       });
-      //     }
-
-      //     if (hasCertificateError(err)) {
-      //       return customReject({
-      //         name: `ECERTIFICATE`,
-      //         message: `Certificate error while requesting ${this.name} data`
-      //       });
-      //     }
-
-      //     return customReject({
-      //       name: `EUNKNOWN`,
-      //       message: err.message
-      //     });
-      //   }
-
-      //   if (typeof body !== 'object') {
-      //     return customReject({
-      //       name: 'ENOTJSON',
-      //       message: 'Response was not parsed as JSON'
-      //     });
-      //   }
-
-      //   if (body.error) {
-      //     return customReject({
-      //       name: 'ERESPONSEERROR',
-      //       message: body.error
-      //     });
-      //   }
-        
-        
-      //   let logData = logHandler(logParts, error.response, );
-      //   console.log('The Error log Data', logData);
-      // ...logData, //TODO: Add this to thre return
-        
-        console.log('Custom Error', {...customError});
+        //   let logData = logHandler(logParts, error.response, );
+        // ...logData, //TODO: Add this to thre return
         return { ...customError }
       }
-
+      
     }
 
     const logHandler = (logParts, response) => {
