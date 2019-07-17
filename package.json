@@ -4,8 +4,10 @@
   "description": "",
   "main": "dist/lib/index.js",
   "scripts": {
+    "copyConfig": "cp -r ./config  ./dist",
     "compile": "tsc",
     "test": "jest",
+    "build": "npm run compile && npm run copyConfig",
     "dev": "watch 'npm run compile' lib"
   },
   "repository": {
@@ -22,9 +24,11 @@
     "@hapi/catbox": "^10.2.1",
     "@hapi/catbox-memory": "^4.1.0",
     "@types/node": "^12.0.10",
+    "@types/opossum": "^1.10.1",
     "@types/split": "^1.0.0",
     "axios-cache-adapter": "^2.3.3",
     "axios-cache-plugin": "^0.1.0",
+    "opossum": "^2.3.0",
     "split": "^1.0.1",
     "winston": "^2.3.0"
   },

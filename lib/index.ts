@@ -1,7 +1,8 @@
-// const config = require('../config/config.json')
+const defaultConfig = require('../config/defaultConfig.json')
 // import { Client as Catbox } from  '@hapi/catbox';
 // import Memory from '@hapi/catbox-memory';
 const axios = require('axios');
+const circuitBreaker = require('opossum');
 // import wrapper from 'axios-cache-plugin'
 // import { setupCache } from 'axios-cache-adapter'
 
@@ -13,13 +14,13 @@ const TIMEOUT = 1500;
 // const TIMEOUT_CATCH = (TIMEOUT * 1000) * 2 + 500;
 const DO_NOT_VARY = ['X-Amzn-Trace-Id', 'X-Correlation-Id', 'response-id'];
 
-const isCircuitBreakerOpen = (error: HttpClientError) => /Circuit breaker is open/.test(error.message);
-const didTimeout = (error: HttpClientError) => /ETIMEDOUT/.test(error.message);
-const didSocketTimeout = (error: HttpClientError) => /ESOCKETTIMEDOUT/.test(error.message);
-const hasCertificateError = (error: HttpClientError) => /certificate/.test(error.message);
-
 interface HttpClientConfig {
-  name: string
+  name: string,
+  circuitBreaker?: {
+    errorThresholdPercentage: number,
+    timeout: number,
+    resetTimeout: number
+  }
 }
 
 const enum HandlerMethod {
@@ -38,41 +39,63 @@ type HttpClientError = {
 
 export class HttpClient {
   client: any;
-  name: string;
+  config: HttpClientConfig;
+  circuit: any;
+  isCircuitBreakerOpen: boolean;
+  didTimeout: boolean;
 
   constructor(config: HttpClientConfig) {
-    const { name } = config;
-    this.name = name;
+    this.config = Object.assign(defaultConfig, config);
     this.client = axios.create({
       timeout: TIMEOUT,
       headers: {
         'User-Agent': USER_AGENT,
       }
     });
-    
+    this.isCircuitBreakerOpen = false;
+    this.didTimeout = false;
+
+    this.circuit = circuitBreaker(this.client.request, this.config.circuitBreaker);
+
     //intercept the response to check for malformed responses
     this.client.interceptors.response.use(function (response) {
-      if (typeof response.data === undefined) {
-        return Promise.reject(new Error('Response data is undefined'));
-      } 
+      if (typeof response.data !== 'object') {
+        return Promise.reject(new Error('Response data is not an object'));
+      }
       return response;
-      }, 
-      function(error) {
+    },
+      function (error) {
         return Promise.reject(error);
       }
     );
-    
+
+    // this.client.interceptors.request.use(function (config) {
+    //   console.log(config);
+    //   // if(this.isCircuitBreakerOpen === true) {
+    //   //   return Promise.reject(new Error('Circuit breaker open'));
+    //   // }
+    //   // else if(this.didTimeout === true) {
+    //   //   return Promise.reject(new Error('Request timed out'));
+    //   // }
+    //   // else {
+    //   //   return request;
+    //   // }
+    // },
+    //   function (error) {
+    //     return Promise.reject(error);
+    //   }
+    // );
   }
 
 
   private handler(type: HandlerMethod, url: string, headers = {}, requestId: string, body?: any) {
     if (requestId) headers['X-Correlation-Id'] = requestId;
-    const logParts = { url, client: this.name, type: 'upstream', requestId };
-    
+    const logParts = { url, client: this.config.name, type: 'upstream', requestId };
+
     let newHeaders = stripHeaders(headers, DO_NOT_VARY);
     let customError = {}
 
-    
+
 
     const successHandler = (response) => {
       let logData = logHandler(logParts, response);
@@ -82,51 +105,23 @@ export class HttpClient {
 
     const errorHandler = (error) => {
       // console.log('Failed', error);
-      if(error.response) {
-        if(error.response.status) {
-          customError = {
-            name: `ESTATUS${error.response.status}`,
-            message: `Status code ${error.response.status} received for ${url}`,
-            details: error.message || ''
-          }
-        
+      if (error.response && error.response.status) {
+        customError = {
+          name: `ESTATUS${error.response.status}`,
+          message: `Status code ${error.response.status} received for ${url}`,
+          details: error.message || ''
         }
-        else if (isCircuitBreakerOpen(error)) {
-          customError = {
-            name: `ECIRCUITBREAKER`,
-            message: `Circuit breaker is open for ${this.name}`
-          }
-        }
-        else if (didTimeout(error)) {
-          customError = {
-            name: `ETIMEOUT`,
-            message: `Request timed out while requesting ${this.name} data`
-          }
-        }
-        else if (didSocketTimeout(error)) {
-          customError = {
-            name: `ESOCKETTIMEDOUT`,
-            message: `Socket timed out while requesting ${this.name} data`
-          }
-        }
-        else if(hasCertificateError(error)) {
-          customError = {
-            name: `ECERTIFICATE`,
-            message: `Certificate error while requesting ${this.name} data`
-          }
-        }
-        else {
-          customError = {
-            name: `EUNKNOWN`,
-            message: error.message
-          }
-        }
-      
-        //   let logData = logHandler(logParts, error.response, );
-        // ...logData, //TODO: Add this to thre return
-        return { ...customError }
       }
-      
+      else {
+        customError = {
+          name: `EUNKNOWN`,
+          message: error.message
+        }
+      }
+      //   let logData = logHandler(logParts, error.response, );
+      // ...logData, //TODO: Add this to thre return
+      return { ...customError }
+
     }
 
     const logHandler = (logParts, response) => {
@@ -147,8 +142,10 @@ export class HttpClient {
         .catch(errorHandler);
     }
     else {
+      this.circuit.on('timeout', () => { return Promise.reject({ name: `ETIMEOUT`, message: `Request timed out while requesting ${this.config.name} data` }) })
+      this.circuit.on('open', () => { return Promise.reject({ name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${this.config.name}` }) })
 
-      return this.client.get(url, { newHeaders })
+      return this.circuit.fire({ method: type, url, newHeaders })
         .then(successHandler)
         .catch(errorHandler);
     }
