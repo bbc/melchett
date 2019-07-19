@@ -18,7 +18,6 @@ interface HttpClientConfig {
   name: string,
   circuitBreaker?: {
     errorThresholdPercentage: number,
-    timeout: number,
     resetTimeout: number
   }
 }
@@ -41,9 +40,7 @@ export class HttpClient {
   client: any;
   config: HttpClientConfig;
   circuit: any;
-  isCircuitBreakerOpen: boolean;
-  didTimeout: boolean;
-
+  
   constructor(config: HttpClientConfig) {
     this.config = Object.assign(defaultConfig, config);
     this.client = axios.create({
@@ -52,41 +49,44 @@ export class HttpClient {
         'User-Agent': USER_AGENT,
       }
     });
-    this.isCircuitBreakerOpen = false;
-    this.didTimeout = false;
-
-    this.circuit = circuitBreaker(this.client.request, this.config.circuitBreaker);
-
-    //intercept the response to check for malformed responses
-    this.client.interceptors.response.use(function (response) {
-      if (typeof response.data !== 'object') {
-        return Promise.reject(new Error('Response data is not an object'));
+    
+    this.circuit = circuitBreaker(this.shouldCircuitTrip, this.config.circuitBreaker);
+    
+    //intercept the request to check for broken circuits
+    this.client.interceptors.request.use((config) => {
+      if(this.circuit.opened === true) {
+        return Promise.reject({name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${this.config.name}`});
       }
-      return response;
+      return config;
     },
-      function (error) {
+      (error) => {
         return Promise.reject(error);
       }
     );
 
-    // this.client.interceptors.request.use(function (config) {
-    //   console.log(config);
-    //   // if(this.isCircuitBreakerOpen === true) {
-    //   //   return Promise.reject(new Error('Circuit breaker open'));
-    //   // }
-    //   // else if(this.didTimeout === true) {
-    //   //   return Promise.reject(new Error('Request timed out'));
-    //   // }
-    //   // else {
-    //   //   return request;
-    //   // }
-    // },
-    //   function (error) {
-    //     return Promise.reject(error);
-    //   }
-    // );
+    //intercept the response to check for malformed responses
+    this.client.interceptors.response.use((response) => {
+      if (typeof response.data !== 'object') {
+        return Promise.reject({name: `ENOTJSON`, message: `Response data was not an object`});
+      }
+      return response;
+    },
+      (error) => {
+        this.circuit.fire(error).catch(() => {});
+        return Promise.reject(error);
+      }
+    );
+
+    
   }
 
+
+  private shouldCircuitTrip(error) {  //TODO: Better name for function
+    if(error.response && error.response.status < 500) {
+      return Promise.resolve(error)
+    }
+    return Promise.reject(error)
+  }
 
   private handler(type: HandlerMethod, url: string, headers = {}, requestId: string, body?: any) {
     if (requestId) headers['X-Correlation-Id'] = requestId;
@@ -104,7 +104,9 @@ export class HttpClient {
     };
 
     const errorHandler = (error) => {
-      // console.log('Failed', error);
+      console.log('---------------------------------------------------');
+      console.log('---------------------------------------------------');
+      console.log('Failed', error);
       if (error.response && error.response.status) {
         customError = {
           name: `ESTATUS${error.response.status}`,
@@ -142,10 +144,8 @@ export class HttpClient {
         .catch(errorHandler);
     }
     else {
-      this.circuit.on('timeout', () => { return Promise.reject({ name: `ETIMEOUT`, message: `Request timed out while requesting ${this.config.name} data` }) })
-      this.circuit.on('open', () => { return Promise.reject({ name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${this.config.name}` }) })
-
-      return this.circuit.fire({ method: type, url, newHeaders })
+      // return this.circuit.fire({ method: type, url, newHeaders })
+      return this.client.get(url, { newHeaders })
         .then(successHandler)
         .catch(errorHandler);
     }

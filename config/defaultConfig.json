@@ -4,7 +4,6 @@
     },
     "circuitBreaker" : {
         "errorThresholdPercentage": 10,
-        "timeout": 1000,
-        "resetTimeout": 5000
+        "resetTimeout": 30000
     }
 }
