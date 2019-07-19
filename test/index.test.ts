@@ -1,6 +1,5 @@
 const nock = require('nock');
 import { HttpClient } from '../lib/index';
-import { tsImportEqualsDeclaration } from '@babel/types';
 
 // describe('receives a successful http response', () => {
 //     beforeAll(async () => {
@@ -67,12 +66,13 @@ import { tsImportEqualsDeclaration } from '@babel/types';
 // });
 
 
+
 describe('circuit breakers ', () => { 
     const config = {
         "name": "test", 
         "circuitBreaker" : {
         "errorThresholdPercentage": 0,
-        "resetTimeout": 5000
+        "resetTimeout": 1000
         }
     }
 
@@ -89,4 +89,38 @@ describe('circuit breakers ', () => {
         const response = await client.get('http://testurl.com/x', 'requestId')
         expect(response).toEqual({name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for test`})
     })
+
+    it('should close the circuit breaker', async () => {
+        const client = new HttpClient(config);
+        await client.get('http://testurl.com/x', 'requestId')
+        await client.get('http://testurl.com/x', 'requestId')
+        
+        return new Promise((resolve, reject) => {
+            setTimeout(async () => {
+                const response = await client.get('http://testurl.com/x', 'requestId')
+                resolve(expect(response).toEqual({name: `ESTATUS500`, message: `Status code 500 received for http://testurl.com/x`, details: "Request failed with status code 500"}))
+            }, 2000)
+        })
+    })
+
+    afterAll(()=> {
+        nock.cleanAll()
+    })
 })
+
+describe('Timeouts ', () => { 
+    beforeAll(async () => {
+        nock('http://testurl.com')
+        .get('/x')
+        .delayConnection(2500)
+        .reply(200, {data:1}, {'x-response-time': 2000, 'content-length': 500})
+    })
+
+    it('should return a timeout error', async () => {
+        const client = new HttpClient({name: 'test'});
+        const response = await client.get('http://testurl.com/x', 'requestId')
+        expect(response).toEqual({name: `ECONNABORTED`, message: `timeout of ${client.client.defaults.timeout}ms exceeded`})
+    })
+
+})
+
