@@ -16,7 +16,7 @@
         "resolveJsonModule" :true
     },
     "include": [
-        "./lib/**/*"
+        "./lib/**/*", "test/caching.test.ts"
     ] ,
     "exclude": [
         "node_modules",

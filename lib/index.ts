@@ -1,7 +1,4 @@
-import { Client as Catbox } from  '@hapi/catbox';
-import Memory from '@hapi/catbox-memory';
 import { logger } from '../common/logger';
-import { stripHeaders } from '../common/stripHeaders';
 
 const defaultConfig = require('../config/defaultConfig.json')
 const axios = require('axios');
@@ -30,14 +27,14 @@ type HttpClientError = {
   message: string
 };
 
-const maxByteSize = 200 * 1024 * 1024;
-const memoryCache = new Catbox(new Memory({ maxByteSize }));
+
 
 export class HttpClient {
   client: any;
   config: HttpClientConfig;
   circuit: any;
-  
+  // cache: any;
+
   constructor(config: HttpClientConfig) {
     this.config = Object.assign(defaultConfig, config);
     this.client = axios.create({
@@ -46,15 +43,16 @@ export class HttpClient {
         'User-Agent': USER_AGENT,
       }
     });
-    
+    // this.cache = // new Catbox();
+
     this.circuit = circuitBreaker(this.shouldCircuitTrip, this.config.circuitBreaker);
-    
+
     //intercept the request to check for broken circuits
     this.client.interceptors.request.use((config) => {
       // console.log(config);
 
-      if(this.circuit.opened === true) {
-        return Promise.reject({name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${this.config.name}`});
+      if (this.circuit.opened === true) {
+        return Promise.reject({ name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${this.config.name}` });
       }
       return config;
     },
@@ -62,28 +60,34 @@ export class HttpClient {
         return Promise.reject(error);
       }
     );
-
-    //intercept the response to check for malformed responses
-    this.client.interceptors.response.use((response) => {
-      // console.log(response);
       
+    // // on the request, serve from the cache if exists
+    // this.client.interceptor.request.use((config) => {
+      
+    // }, (error) => Promise.reject(error));
+
+    // // on response, set or delete the cache
+    // this.client.interceptors.response.use((response) => {
+    //   return response;
+    // }, (error) => Promise.reject(error));
+
+    // intercept the response to check for malformed responses
+    this.client.interceptors.response.use((response) => {
       if (typeof response.data !== 'object') {
-        return Promise.reject({name: `ENOTJSON`, message: `Response data was not an object`});
+        return Promise.reject({ name: `ENOTJSON`, message: `Response data was not an object` });
       }
       return response;
     },
       (error) => {
-        this.circuit.fire(error).catch(() => {});
+        this.circuit.fire(error).catch(() => { });
         return Promise.reject(error);
       }
     );
-
-    
   }
 
 
   private shouldCircuitTrip(error) {  //TODO: Better name for function
-    if(error.response && error.response.status < 500) {
+    if (error.response && error.response.status < 500) {
       return Promise.resolve(error)
     }
     return Promise.reject(error)
@@ -92,11 +96,8 @@ export class HttpClient {
   private handler(type: HandlerMethod, url: string, headers = {}, requestId: string, body?: any) {
     if (requestId) headers['X-Correlation-Id'] = requestId;
     const logParts = { url, client: this.config.name, type: 'upstream', requestId };
-
-    let newHeaders = stripHeaders(headers, DO_NOT_VARY); //TODO: Change this - shouldn't actually strip the headers!
+  
     let customError = {}
-
-
 
     const successHandler = (response) => {
       let logData = logHandler(logParts, response);
@@ -115,7 +116,7 @@ export class HttpClient {
           details: error.message || ''
         }
       }
-      else if (error.name && error.name === 'ECIRCUITBREAKER' ) {
+      else if (error.name && error.name === 'ECIRCUITBREAKER') {
         customError = {
           name: error.name,
           message: error.message
@@ -152,13 +153,13 @@ export class HttpClient {
 
 
     if (type === HandlerMethod.POST) {
-      return this.client.post(url, body, { newHeaders })
+      return this.client.post(url, body, { headers })
         .then(successHandler)
         .catch(errorHandler);
     }
     else {
-      // return this.circuit.fire({ method: type, url, newHeaders })
-      return this.client.get(url, { newHeaders })
+      // return this.circuit.fire({ method: type, url, headers })
+      return this.client.get(url, { headers })
         .then(successHandler)
         .catch(errorHandler);
     }

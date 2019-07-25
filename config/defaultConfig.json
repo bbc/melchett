@@ -5,7 +5,7 @@
         "staleWhileRevalidate": 7200,
         "staleIfError": 7200
     },
-        "catbox":{
+    "catbox":{
         "maxMBSize": 200
     },
     "circuitBreaker" : {
