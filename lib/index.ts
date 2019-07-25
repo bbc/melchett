@@ -1,4 +1,5 @@
-import { logger } from '../common/logger';
+import { logger } from './logger';
+import { Cache } from './caching';
 
 const defaultConfig = require('../config/defaultConfig.json')
 const axios = require('axios');
@@ -33,7 +34,7 @@ export class HttpClient {
   client: any;
   config: HttpClientConfig;
   circuit: any;
-  // cache: any;
+  cache: any;
 
   constructor(config: HttpClientConfig) {
     this.config = Object.assign(defaultConfig, config);
@@ -43,7 +44,7 @@ export class HttpClient {
         'User-Agent': USER_AGENT,
       }
     });
-    // this.cache = // new Catbox();
+    this.cache = new Cache(defaultConfig.catbox.maxMBSize); // TODO: check this value
 
     this.circuit = circuitBreaker(this.shouldCircuitTrip, this.config.circuitBreaker);
 

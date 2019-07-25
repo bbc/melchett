@@ -2,7 +2,6 @@
     "cache": {
         "listMaxAge": 300,
         "episodeMaxAge": 30,
-        "staleWhileRevalidate": 7200,
         "staleIfError": 7200
     },
     "catbox":{

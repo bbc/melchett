@@ -5,7 +5,7 @@ module.exports = {
     verbose: false,
     testMatch: [
       '<rootDir>/test/**/?(*.)+(spec|test).ts?(x)',
-      '<rootDir>/src/**/?(*.)+(spec|test).ts?(x)'
+      '<rootDir>/lib/**/?(*.)+(spec|test).ts?(x)'
     ],
     transform: {
       "^.+\\.tsx?$": "ts-jest"
@@ -13,14 +13,10 @@ module.exports = {
     collectCoverage: false,
     coverageDirectory: '<rootDir>/coverage',
     collectCoverageFrom: [
-      "**/src/search/**.{ts,jsx}",
-      "**/src/common/request/**.{ts,jsx}",
-      "!**/src/search/models/**",
+      "**/lib/**.{ts,jsx}",
       "!**/node_modules/**",
-      "!**/pipeline/**",
       "!**/coverage/**",
-      "!**/test/**",
-      "!**/src/config/**"
+      "!**/test/**"
     ],
     moduleFileExtensions: [
       "ts",
