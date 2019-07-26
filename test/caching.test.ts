@@ -58,6 +58,25 @@ describe('Caching client', () => {
             expect(catboxSetFunc).toBeCalledWith(expect.any(Object), expect.any(Object), expect.any(Number));        
         });
 
+        it('has multiple cache-control header values', async () => {
+            const response = {
+                config: {
+                    method: 'get',
+                },
+                headers: {
+                    "cache-control": 'public, max-age=3600, min-fresh=7200'
+                },
+                body: {
+                    foo: 'bar'
+                }
+            };
+
+            const catboxSetFunc = jest.fn(() => { return Promise.resolve(); });
+            Catbox.set = catboxSetFunc;
+            cache.setCache(response);
+            expect(catboxSetFunc).toBeCalledWith(expect.any(Object), expect.any(Object), expect.any(Number));        
+        });
+
     });
 
     describe('should not cache a response if not appropriate', () => {
@@ -177,6 +196,73 @@ describe('Caching client', () => {
             const response = {
                 config: {
                     method: 'get',
+                },
+                body: {
+                    foo: 'bar'
+                }
+            };
+
+            const catboxSetFunc = jest.fn(() => { return Promise.resolve(); });
+            Catbox.set = catboxSetFunc;
+
+            // Act
+            cache.setCache(response);
+
+            // Assert
+            expect(catboxSetFunc).not.toBeCalled();
+        });
+
+        it('has no cache-control header values', async () => {
+            // Arrange
+            const response = {
+                config: {
+                    method: 'get',
+                },
+                headers: {
+                    "random-header": "random value"
+                },
+                body: {
+                    foo: 'bar'
+                }
+            };
+
+            const catboxSetFunc = jest.fn(() => { return Promise.resolve(); });
+            Catbox.set = catboxSetFunc;
+
+            // Act
+            cache.setCache(response);
+
+            // Assert
+            expect(catboxSetFunc).not.toBeCalled();
+        });
+
+        it('has an empty cache-control header value', async () => {
+            const response = {
+                config: {
+                    method: 'get',
+                },
+                headers: {
+                    "cache-control": ''
+                },
+                body: {
+                    foo: 'bar'
+                }
+            };
+
+            const catboxSetFunc = jest.fn(() => { return Promise.resolve(); });
+            Catbox.set = catboxSetFunc;
+            cache.setCache(response);
+            expect(catboxSetFunc).not.toBeCalled();
+        });
+
+        it('cache-control header value has max-age 3600 and no cache ', async () => {
+            // Arrange
+            const response = {
+                config: {
+                    method: 'get',
+                },
+                headers: {
+                    "cache-control": "max-age=3600, no-cache"
                 },
                 body: {
                     foo: 'bar'
