@@ -1,7 +1,8 @@
 import { logger } from './logger';
 import { Cache } from './caching';
 
-const defaultConfig = require('../config/defaultConfig.json')
+import defaultConfig from '../config/defaultConfig.json';
+import { promises } from 'fs';
 const axios = require('axios');
 const circuitBreaker = require('opossum');
 
@@ -14,6 +15,11 @@ interface HttpClientConfig {
   circuitBreaker?: {
     errorThresholdPercentage: number,
     resetTimeout: number
+  },
+  cache?:{
+    maxByteSize:number,
+    cacheTtl:number,
+    doNotVary:string[]
   }
 }
 
@@ -37,21 +43,21 @@ export class HttpClient {
   cache: any;
 
   constructor(config: HttpClientConfig) {
-    this.config = Object.assign(defaultConfig, config);
+    this.config = {...defaultConfig, ...config};
     this.client = axios.create({
       timeout: TIMEOUT,
       headers: {
         'User-Agent': USER_AGENT,
       }
     });
-    this.cache = new Cache(defaultConfig.catbox.maxMBSize); // TODO: check this value
+    
+    this.cache = new Cache(this.config.cache); // TODO: check this value
 
     this.circuit = circuitBreaker(this.shouldCircuitTrip, this.config.circuitBreaker);
 
-    //intercept the request to check for broken circuits
+    
+    //intercept the request
     this.client.interceptors.request.use((config) => {
-      // console.log(config);
-
       if (this.circuit.opened === true) {
         return Promise.reject({ name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${this.config.name}` });
       }
@@ -62,7 +68,19 @@ export class HttpClient {
       }
     );
       
-    // // on the request, serve from the cache if exists
+    
+    // this.client.interceptors.request.use((config) => {
+    //   console.log('cache interceptor fired');
+    //   const cacheFetch = this.cache.getCacheIfExists(config);
+    //   return cacheFetch ? cacheFetch : config;
+    //   },
+    //   (error) => {
+    //     return Promise.reject(error);
+    //   }
+    // );
+  
+
+    
     // this.client.interceptor.request.use((config) => {
       
     // }, (error) => Promise.reject(error));
@@ -71,7 +89,16 @@ export class HttpClient {
     // this.client.interceptors.response.use((response) => {
     //   return response;
     // }, (error) => Promise.reject(error));
-
+    // intercept the response
+    this.client.interceptors.response.use(function(response) {
+      this.cache.maybeSetCache(response)
+      return response;
+      }.bind(this),
+      function(error){
+        return Promise.reject(error)
+      }
+    );
+    
     // intercept the response to check for malformed responses
     this.client.interceptors.response.use((response) => {
       if (typeof response.data !== 'object') {
@@ -84,6 +111,8 @@ export class HttpClient {
         return Promise.reject(error);
       }
     );
+
+    
   }
 
 
@@ -107,9 +136,6 @@ export class HttpClient {
     };
 
     const errorHandler = (error) => {
-      // console.log('---------------------------------------------------');
-      // console.log('---------------------------------------------------');
-      // console.log('Failed', error.code);
       if (error.response && error.response.status) {
         customError = {
           name: `ESTATUS${error.response.status}`,

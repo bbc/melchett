@@ -7,51 +7,61 @@ import Memory from '@hapi/catbox-memory';
 
 interface CacheConfig {
     maxByteSize: number
+    cacheTtl: number
+    doNotVary: string[]
 }
 
 export class Cache {
     memoryCache: any;
-    
+    config: CacheConfig;
+
+
     constructor(config: CacheConfig) {
         this.memoryCache = new Catbox(new Memory({ maxByteSize: config.maxByteSize }));
+        this.config = config;
     }
 
-    getCacheIfExists() {
-    
+    getCacheIfExists(request) {
+        const cacheKey = this.getCacheKey(request);
+        return this.memoryCache.get(cacheKey);
     }
     
-    setCache(response) {
+    maybeSetCache(response) {
         if(isCachable(response)) {
-            Catbox.set({segment: 'whatever', id: ''}, {}, 5);
+            this.memoryCache.set({segment: 'melchett:v1.0', id: this.getCacheKey(response.config)}, response.body, this.getCacheTtl(response));
         }
-        
-        // Key = { segment: 'melchett:v1.0', id: 'asjdhfjlasdhklsdg' } id = hash(url, varyingHeaders)
-        // Value = response.body
-        // TTL = Math.min(cache-control header, config.maxCacheAge)
+    }
+
+    getCacheKey(request) {
+        const shasum = crypto.createHash('sha1');
+        console.log(request.headers);
+        const cacheKey = request.url + JSON.stringify(getVaryingHeaders(request.headers, this.config.doNotVary))
+        shasum.update(cacheKey);
+        return shasum.digest('hex');
+    }
+    
+    getCacheTtl(response) {
+        const cacheControl = getCacheControl(response);
+    
+        if (cacheControl) {
+            return Math.min(cacheControl['max-age'], this.config.cacheTtl)
+        }
     }
 }
 
-/**
- * 
- * @param headers - The original header data
- * @param doNotVary - An array of values that should not be considered during cache Vary operations
- */
 function getVaryingHeaders(headers: {}, doNotVary: string[] ) {
-    doNotVary.forEach(function(doNotVaryHeader){
-        if (headers) {
-            Object.keys(headers).forEach(function(headerItem) {
-                if(headerItem.toLowerCase() === doNotVaryHeader.toLowerCase()) {
-                    delete headers[headerItem];
-                }
-            })
+    const varyingHeaders = {};
+    console.log('HEADERS', headers);
+    Object.keys(headers).forEach(function(headerItem) {
+        if(!(headerItem in doNotVary)) {
+            varyingHeaders[headerItem] = headers[headerItem];
         }
     })
-    return headers;
+    return varyingHeaders;
 }
 
 function isCachable(response) {
     const cacheControl = getCacheControl(response);
-
     if (cacheControl) {
         const isGetRequest = response.config.method === 'get';
         const hasNoCache = cacheControl['no-cache'];

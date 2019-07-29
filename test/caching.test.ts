@@ -5,7 +5,7 @@ jest.mock('@hapi/catbox');
 
 // const catboxMock = Catbox as jest.Mock<any>; <= might need this later
 
-const cache = new Cache({ maxByteSize: 30 * 1024 * 1024 });
+const cache = new Cache({maxByteSize: 5000, cacheTtl: 200, doNotVary:[]});
 
 describe('Caching client', () => {
     describe('should cache response if cacheable', () => {
@@ -13,7 +13,10 @@ describe('Caching client', () => {
             // Arrange
             const response = {
                 config: {
-                    method: 'get'
+                    method: 'get',
+                    headers: {
+                        "cache-control": "max-age=2000"
+                    }
                 },
                 headers: {
                     "cache-control": "max-age=3600"
@@ -23,11 +26,16 @@ describe('Caching client', () => {
                 }
             };
     
-            const catboxSetFunc = jest.fn(() => { return Promise.resolve(); });
+            const catboxSetFunc = jest.fn(() => { 
+                console.log('pants');
+                return Promise.resolve(); });
+            
+            
+            
             Catbox.set = catboxSetFunc;
     
             // Act
-            cache.setCache(response);
+            cache.maybeSetCache(response);
     
             // Assert
             expect(catboxSetFunc).toBeCalledWith(expect.any(Object), expect.any(Object), expect.any(Number));        
@@ -52,7 +60,7 @@ describe('Caching client', () => {
             Catbox.set = catboxSetFunc;
     
             // Act
-            cache.setCache(response);
+            cache.maybeSetCache(response);
     
             // Assert
             expect(catboxSetFunc).toBeCalledWith(expect.any(Object), expect.any(Object), expect.any(Number));        
@@ -73,7 +81,7 @@ describe('Caching client', () => {
 
             const catboxSetFunc = jest.fn(() => { return Promise.resolve(); });
             Catbox.set = catboxSetFunc;
-            cache.setCache(response);
+            cache.maybeSetCache(response);
             expect(catboxSetFunc).toBeCalledWith(expect.any(Object), expect.any(Object), expect.any(Number));        
         });
 
@@ -134,10 +142,10 @@ describe('Caching client', () => {
             Catbox.set = catboxSetFunc;
     
             // Act
-            cache.setCache(postResponse);
-            cache.setCache(putResponse);
-            cache.setCache(deleteResponse);
-            cache.setCache(patchResponse);
+            cache.maybeSetCache(postResponse);
+            cache.maybeSetCache(putResponse);
+            cache.maybeSetCache(deleteResponse);
+            cache.maybeSetCache(patchResponse);
 
             // Assert
             expect(catboxSetFunc).not.toBeCalled(); 
@@ -161,7 +169,7 @@ describe('Caching client', () => {
             Catbox.set = catboxSetFunc;
 
             // Act
-            cache.setCache(response);
+            cache.maybeSetCache(response);
 
             // Assert
             expect(catboxSetFunc).not.toBeCalled();
@@ -185,7 +193,7 @@ describe('Caching client', () => {
             Catbox.set = catboxSetFunc;
 
             // Act
-            cache.setCache(response);
+            cache.maybeSetCache(response);
 
             // Assert
             expect(catboxSetFunc).not.toBeCalled();
@@ -206,7 +214,7 @@ describe('Caching client', () => {
             Catbox.set = catboxSetFunc;
 
             // Act
-            cache.setCache(response);
+            cache.maybeSetCache(response);
 
             // Assert
             expect(catboxSetFunc).not.toBeCalled();
@@ -230,7 +238,7 @@ describe('Caching client', () => {
             Catbox.set = catboxSetFunc;
 
             // Act
-            cache.setCache(response);
+            cache.maybeSetCache(response);
 
             // Assert
             expect(catboxSetFunc).not.toBeCalled();
@@ -251,7 +259,7 @@ describe('Caching client', () => {
 
             const catboxSetFunc = jest.fn(() => { return Promise.resolve(); });
             Catbox.set = catboxSetFunc;
-            cache.setCache(response);
+            cache.maybeSetCache(response);
             expect(catboxSetFunc).not.toBeCalled();
         });
 
@@ -273,7 +281,7 @@ describe('Caching client', () => {
             Catbox.set = catboxSetFunc;
 
             // Act
-            cache.setCache(response);
+            cache.maybeSetCache(response);
 
             // Assert
             expect(catboxSetFunc).not.toBeCalled();
@@ -288,4 +296,5 @@ describe('Caching client', () => {
  *  - Should use URL and varying headers hash as cache key
  *  - Non-varying header should not affect cache key
  *  - TTL should respect `max-age` and/or `stale-if-error` values of response or config (whichever is lower)
+ *  - Should set a cache item and retrive the same item from the cache
  */

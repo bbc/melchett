@@ -1,8 +1,8 @@
 {
     "cache": {
-        "listMaxAge": 300,
-        "episodeMaxAge": 30,
-        "staleIfError": 7200
+        "maxByteSize" : 500,
+        "cacheTtl": 7200,
+        "doNotVary": []
     },
     "catbox":{
         "maxMBSize": 200
