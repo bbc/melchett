@@ -27,12 +27,7 @@ export class Cache {
     }
     
     maybeSetCache(response) {
-        console.log('MaybeSetCache', response);
-        
         if(isCachable(response)) {
-            console.log('True');
-            console.log(this.memoryCache.set);
-            
             this.memoryCache.set({segment: 'melchett:v1.0', id: this.getCacheKey(response.config)}, response.body, this.getCacheTtl(response));
         }
     }
@@ -55,6 +50,9 @@ export class Cache {
 
 function getVaryingHeaders(headers: {}, doNotVary: string[] ) {
     const varyingHeaders = {};
+    if(isEmpty(headers)) {
+        return varyingHeaders;
+    }
     Object.keys(headers).forEach(function(headerItem) {
         if(!(headerItem in doNotVary)) {
             varyingHeaders[headerItem] = headers[headerItem];
@@ -81,4 +79,13 @@ function getCacheControl(response) {
         return;
     }
     return parseCacheControl(headerValues);
+}
+
+function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+
+    return true;
 }
