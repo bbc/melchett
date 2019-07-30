@@ -27,14 +27,18 @@ export class Cache {
     }
     
     maybeSetCache(response) {
+        console.log('MaybeSetCache', response);
+        
         if(isCachable(response)) {
+            console.log('True');
+            console.log(this.memoryCache.set);
+            
             this.memoryCache.set({segment: 'melchett:v1.0', id: this.getCacheKey(response.config)}, response.body, this.getCacheTtl(response));
         }
     }
 
     getCacheKey(request) {
         const shasum = crypto.createHash('sha1');
-        console.log(request.headers);
         const cacheKey = request.url + JSON.stringify(getVaryingHeaders(request.headers, this.config.doNotVary))
         shasum.update(cacheKey);
         return shasum.digest('hex');
@@ -51,7 +55,6 @@ export class Cache {
 
 function getVaryingHeaders(headers: {}, doNotVary: string[] ) {
     const varyingHeaders = {};
-    console.log('HEADERS', headers);
     Object.keys(headers).forEach(function(headerItem) {
         if(!(headerItem in doNotVary)) {
             varyingHeaders[headerItem] = headers[headerItem];

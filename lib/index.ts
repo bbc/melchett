@@ -80,7 +80,7 @@ export class HttpClient {
     // );
   
 
-    
+
     // this.client.interceptor.request.use((config) => {
       
     // }, (error) => Promise.reject(error));
