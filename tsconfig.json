@@ -13,7 +13,7 @@
             "esnext.asynciterable"
         ],
         "esModuleInterop": true,
-        "resolveJsonModule" :true
+        "resolveJsonModule": true
     },
     "include": [
         "./lib/**/*"

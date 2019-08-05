@@ -4,7 +4,6 @@ module.exports = {
     clearMocks: true,
     verbose: false,
     testMatch: [
-      '<rootDir>/test/**/?(*.)+(spec|test).ts?(x)',
       '<rootDir>/lib/**/?(*.)+(spec|test).ts?(x)'
     ],
     transform: {
@@ -14,17 +13,16 @@ module.exports = {
     coverageDirectory: '<rootDir>/coverage',
     collectCoverageFrom: [
       "**/lib/**.{ts,jsx}",
+      "!**/lib?(*.)+(spec|test).ts?(x)",
       "!**/node_modules/**",
-      "!**/coverage/**",
-      "!**/test/**"
+      "!**/coverage/**"
     ],
     moduleFileExtensions: [
-      "ts",
-      "tsx",
       "js",
       "jsx",
-      "json",
-      "node"
+      "ts",
+      "tsx",
+      "json"
     ]
   }
   

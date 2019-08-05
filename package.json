@@ -2,18 +2,19 @@
   "name": "melchett",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/lib/index.js",
+  "main": "dist/lib/client.js",
   "scripts": {
-    "copyConfig": "cp -r ./config  ./dist",
+    "build": "npm run compile",
     "compile": "tsc",
-    "test": "jest",
-    "build": "npm run compile && npm run copyConfig",
-    "dev": "watch 'npm run compile' lib"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bbc/melchett.git"
   },
+  "files": [
+    "dist"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -24,11 +25,13 @@
     "@hapi/catbox": "^10.2.1",
     "@hapi/catbox-memory": "^4.1.0",
     "@hapi/wreck": "^15.0.1",
+    "@types/catbox": "^10.0.6",
     "@types/node": "^12.0.10",
     "@types/opossum": "^1.10.1",
     "@types/split": "^1.0.0",
     "axios-cache-adapter": "^2.3.3",
     "axios-cache-plugin": "^0.1.0",
+    "koa-compose": "^4.1.0",
     "opossum": "^2.3.0",
     "split": "^1.0.1",
     "winston": "^2.3.0"
