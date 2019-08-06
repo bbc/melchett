@@ -35,31 +35,34 @@ const getCacheTtl = (response, config) => {
     }
 }
 
-const getFromCache = (cache, ctx, config) => {
-    const cacheKey = getRequestHash(ctx.request, config.doNotVary);
+const getFromCache = (cache, context, config) => {
+    const cacheKey = getRequestHash(context.request, config.doNotVary);
 
     return cache.get(cacheKey);
 }
 
-const storeInCache = (cache, ctx, config) => {
-    if (isCacheable(ctx.response)) {
+const storeInCache = (cache, context, config) => {
+    if (isCacheable(context.response)) {
         const cacheKeyObject = {
             segment: 'melchett:v1.0',
-            id: getRequestHash(ctx.request, config.doNotVary)
+            id: getRequestHash(context.request, config.doNotVary)
         }
 
-        return cache.set(cacheKeyObject, ctx.response.body, getCacheTtl(ctx.response, config));
+        return cache.set(cacheKeyObject, context.response.body, getCacheTtl(context.response, config));
     }
 }
 
 const caching = (cache, config: CacheConfig) => {
-    return async (ctx, next) => {
-        const cachedResponse = await getFromCache(cache, ctx.request, config);
+    return async (context: MiddlewareContext, next) => {
+        const cachedResponse = await getFromCache(cache, context.request, config);
+        if (cachedResponse) {
+            return Promise.resolve(cachedResponse);
+        }
 
         await next();
 
-        if (ctx.response) {
-            await storeInCache(cache, ctx, config);
+        if (context.response) {
+            await storeInCache(cache, context, config);
         }
     }
 }

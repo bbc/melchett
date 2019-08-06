@@ -29,7 +29,12 @@ interface Logger {
   warn: (...args: any) => {}
 }
 
-type MiddlewareFunc = (context: any, next: () => {}) => {};
+type MiddlewareContext = {
+  request: RequestConfig,
+  response?: any
+}
+
+type MiddlewareFunc = (context: MiddlewareContext, next: () => {}) => {};
 
 interface HttpClientConfig {
   name: string,
