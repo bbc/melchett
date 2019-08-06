@@ -6,7 +6,9 @@
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "test:spec": "npx jest lib",
+    "test:endtoend": "npx jest test/endtoend"
   },
   "repository": {
     "type": "git",
