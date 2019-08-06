@@ -1,6 +1,9 @@
 import axios, { AxiosInstance } from 'axios';
 import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
+import { caching } from './middleware/caching';
+import { circuit } from './middleware/circuitBreaker';
+import { isValidJson } from './middleware/validJson';
 
 const defaults = {
   userAgent: 'itv/' + process.env.npm_package_name + '/' + process.env.npm_package_version,
@@ -42,7 +45,7 @@ export class HttpClient {
       let logData = logHandler(logParts, response);
       this._config.logger.info(logData);
       return response.data;
-    };
+    }
 
     const errorHandler = (error) => {
       // post-response (error): openCircuit
@@ -103,7 +106,7 @@ export class HttpClient {
     return this.request({ method: 'post', url, headers, body });
   }
 
-  use() {
-
+  useCache(cache, config) {
+    this._middleware.push(caching(cache, config));
   }
 }
