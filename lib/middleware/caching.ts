@@ -1,12 +1,6 @@
 import { parseCacheControl } from '@hapi/wreck';
 import { getRequestHash } from '../utils/requestHash';
 
-const defaults = {
-    maxSizeInMB: 500,
-    cacheTtl: 7200,
-    doNotVary: []
-}
-
 const isCacheable = (response) => {
     const cacheControl = getCacheControl(response);
     if (cacheControl) {
@@ -53,12 +47,20 @@ const storeInCache = (cache, context, config) => {
 }
 
 const caching = (cache, config: CacheConfig) => {
+    const defaults = {
+        cacheTtl: 7200,
+        doNotVary: [],
+        ignoreErrors: true
+    };
+
+    config = { ...defaults, ...config };
+
     return async (context: MiddlewareContext, next) => {
         if (!cache.isReady()) {
             try {
                 await cache.start();
             } catch (err) {
-                if (config.ignoreErrors) {
+                if (!config.ignoreErrors) {
                     throw err;
                 } else {
                     return next();
