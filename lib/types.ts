@@ -15,6 +15,13 @@ interface CacheConfig {
   ignoreErrors: boolean
 }
 
+interface CacheStore {
+  isReady: () => boolean,
+  get: (key: { segment: string, id: string }) => Promise<any>,
+  set: (key: { segment: string, id: string }, value: any, ttl: number) => Promise<any>,
+  start: () => Promise<any>
+}
+
 interface RequestConfig {
   method: 'get' | 'post',
   url: string,
@@ -46,6 +53,9 @@ interface HttpClientConfig {
   name: string,
   timeout?: number,
   retries?: number,
+  cache?: {
+    store: CacheStore
+  } & CacheConfig,
   retryDelay?: number,
   successPredicate?: (status: number) => boolean,
   userAgent?: string,

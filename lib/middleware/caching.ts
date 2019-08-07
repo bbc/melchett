@@ -21,7 +21,14 @@ const getCacheControl = (response) => {
     return parseCacheControl(headerValues);
 }
 
-const getCacheTtl = (response, config) => {
+const getCacheKeyObject = (context, config) => {
+    return {
+        segment: 'melchett:v1.0',
+        id: getRequestHash(context.request, config.doNotVary)
+    }
+}
+
+const getCacheTtl = (response, config: CacheConfig) => {
     const cacheControl = getCacheControl(response);
 
     if (cacheControl) {
@@ -29,24 +36,21 @@ const getCacheTtl = (response, config) => {
     }
 }
 
-const getFromCache = (cache, context, config) => {
-    const cacheKey = getRequestHash(context.request, config.doNotVary);
+const getFromCache = (cache: CacheStore, context, config: CacheConfig) => {
+    const cacheKeyObject = getCacheKeyObject(context, config);
 
-    return cache.get(cacheKey);
+    return cache.get(cacheKeyObject);
 }
 
-const storeInCache = (cache, context, config) => {
+const storeInCache = (cache: CacheStore, context, config: CacheConfig) => {
     if (isCacheable(context.response)) {
-        const cacheKeyObject = {
-            segment: 'melchett:v1.0',
-            id: getRequestHash(context.request, config.doNotVary)
-        }
+        const cacheKeyObject = getCacheKeyObject(context, config);
 
         return cache.set(cacheKeyObject, context.response.body, getCacheTtl(context.response, config));
     }
 }
 
-const caching = (cache, config: CacheConfig) => {
+const caching = (cache: CacheStore, config: CacheConfig) => {
     const defaults = {
         cacheTtl: 7200,
         doNotVary: [],
