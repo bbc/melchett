@@ -40,8 +40,10 @@ const getFromCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
     const cacheKeyObject = getCacheKeyObject(ctx, cache);
 
     return cache.store.get(cacheKeyObject)
-        .then((responseString) => {
-            return responseString && JSON.parse(responseString);
+        .then((cacheObject) => {
+            if (cacheObject && cacheObject.item) {
+                return JSON.parse(cacheObject.item)
+            }
         });
 }
 
