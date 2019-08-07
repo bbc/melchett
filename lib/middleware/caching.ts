@@ -69,6 +69,10 @@ const caching = (cache: CacheCombined) => {
 
     cache = { ...defaults, ...cache };
 
+    if (!~cache.doNotVary.indexOf('x-correlation-id')) {
+        cache.doNotVary.push('x-correlation-id');
+    }
+
     return async (ctx: MiddlewareContext, next) => {
         if (!cache.store.isReady()) {
             try {
