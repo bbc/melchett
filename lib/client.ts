@@ -39,7 +39,8 @@ class HttpClient {
 
   constructor(config: HttpClientConfig) {
     const defaults = {
-      userAgent: 'itv/' + process.env.npm_package_name + '/' + process.env.npm_package_version,
+      name: 'http',
+      userAgent: 'melchett/v1.0',
       timeout: 1500,
       retries: 1,
       successPredicate: (status: number) => status >= 200 && status < 500
