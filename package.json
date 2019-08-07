@@ -24,8 +24,6 @@
   },
   "homepage": "https://github.com/bbc/melchett#readme",
   "dependencies": {
-    "@hapi/catbox": "^10.2.1",
-    "@hapi/catbox-memory": "^4.1.0",
     "@hapi/wreck": "^15.0.1",
     "@types/catbox": "^10.0.6",
     "@types/node": "^12.0.10",
