@@ -1,6 +1,6 @@
 import { logWriter } from './logWriter';
 
-describe('Logging middleware', () => {
+describe('Log writer', () => {
     it.skip('fake',()=>{
 
     })
