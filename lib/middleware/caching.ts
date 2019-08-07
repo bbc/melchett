@@ -21,7 +21,7 @@ const getCacheControl = (response) => {
     return parseCacheControl(headerValues);
 }
 
-const getCacheKeyObject = (context, config) => {
+const getCacheKeyObject = (context, config: CacheConfig) => {
     return {
         segment: 'melchett:v1.0',
         id: getRequestHash(context.request, config.doNotVary)
@@ -36,35 +36,35 @@ const getCacheTtl = (response, config: CacheConfig) => {
     }
 }
 
-const getFromCache = (cache: CacheStore, context, config: CacheConfig) => {
-    const cacheKeyObject = getCacheKeyObject(context, config);
+const getFromCache = (cache: CacheCombined, context) => {
+    const cacheKeyObject = getCacheKeyObject(context, cache);
 
-    return cache.get(cacheKeyObject);
+    return cache.store.get(cacheKeyObject);
 }
 
-const storeInCache = (cache: CacheStore, context, config: CacheConfig) => {
+const storeInCache = (cache: CacheCombined, context) => {
     if (isCacheable(context.response)) {
-        const cacheKeyObject = getCacheKeyObject(context, config);
+        const cacheKeyObject = getCacheKeyObject(context, cache);
 
-        return cache.set(cacheKeyObject, context.response.body, getCacheTtl(context.response, config));
+        return cache.store.set(cacheKeyObject, context.response.body, getCacheTtl(context.response, cache));
     }
 }
 
-const caching = (cache: CacheStore, config: CacheConfig) => {
+const caching = (cache: CacheCombined) => {
     const defaults = {
         cacheTtl: 7200,
         doNotVary: [],
         ignoreErrors: true
     };
 
-    config = { ...defaults, ...config };
+    cache = { ...defaults, ...cache };
 
     return async (context: MiddlewareContext, next) => {
-        if (!cache.isReady()) {
+        if (!cache.store.isReady()) {
             try {
-                await cache.start();
+                await cache.store.start();
             } catch (err) {
-                if (!config.ignoreErrors) {
+                if (!cache.ignoreErrors) {
                     throw err;
                 } else {
                     return next();
@@ -72,7 +72,7 @@ const caching = (cache: CacheStore, config: CacheConfig) => {
             }
         }
 
-        const cachedResponse = await getFromCache(cache, context.request, config);
+        const cachedResponse = await getFromCache(cache, context.request);
         if (cachedResponse) {
             context.response = cachedResponse;
             return context;
@@ -81,7 +81,7 @@ const caching = (cache: CacheStore, config: CacheConfig) => {
         await next();
 
         if (context.response) {
-            await storeInCache(cache, context, config);
+            await storeInCache(cache, context);
         }
 
         return context;

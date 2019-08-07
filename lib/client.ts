@@ -61,6 +61,9 @@ class HttpClient {
      * Initialise middleware in correct order
      *    Cache -> Valid JSON -> Valid Status -> Circuit Breaker -> Logging
      *  */
+    if (this._config.cache) {
+      this._middleware.push(caching(this._config.cache));
+    }
 
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));

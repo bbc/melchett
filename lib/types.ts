@@ -9,7 +9,6 @@ interface CircuitBreakerConfig {
 }
 
 interface CacheConfig {
-  maxSizeInMB: number,
   cacheTtl: number,
   doNotVary: string[],
   ignoreErrors: boolean
@@ -21,6 +20,8 @@ interface CacheStore {
   set: (key: { segment: string, id: string }, value: any, ttl: number) => Promise<any>,
   start: () => Promise<any>
 }
+
+type CacheCombined = CacheConfig & { store: CacheStore };
 
 interface RequestConfig {
   method: 'get' | 'post',
