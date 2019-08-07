@@ -9,9 +9,9 @@ interface CircuitBreakerConfig {
 }
 
 interface CacheConfig {
-  cacheTtl: number,
-  doNotVary: string[],
-  ignoreErrors: boolean
+  cacheTtl?: number,
+  doNotVary?: string[],
+  ignoreErrors?: boolean
 }
 
 interface CacheStore {
