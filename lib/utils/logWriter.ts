@@ -10,11 +10,16 @@ const logWriter = (logger: Logger, ctx: MiddlewareContext) => {
         logger.error({ ...requestLog, ...ctx.error });
     } else {
         const responseLog = {
-            duration: ctx.response.headers['x-response-time'],
             statusCode: ctx.response.status,
             contentLength: ctx.response.headers['content-length'],
             melchettCache: ctx.response.headers['x-melchett-cache'] || 'MISS'
         };
+
+        const upstreamDuration = parseFloat(ctx.response.headers['x-response-time']);
+
+        if (!Number.isNaN(upstreamDuration)) {
+            responseLog['upstreamDuration'] = upstreamDuration;
+        }
 
         logger.info({ ...requestLog, ...responseLog });
     }

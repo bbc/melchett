@@ -54,7 +54,7 @@ const storeInCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
         const prunedResponse = {
             status: ctx.response.status,
             statusText: ctx.response.statusText,
-            headers: { ...ctx.response.headers, 'x-melchett-cache': 'HIT' },
+            headers: { ...ctx.response.headers, 'x-melchett-cache': 'HIT', 'x-response-time': undefined },
             data: ctx.response.data
         };
 
