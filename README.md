@@ -75,3 +75,18 @@ Alternatively, if an error occurs at some point in the request/response chain it
     errorDetails: 'Internal Server Error'
 }
 ```
+
+## Contributing
+To develop `melchett` as a dependency for another package, when inside the `melchett` directory run:
+```
+npm link
+```
+
+Then, switch into the consuming package directory and run:
+```
+npm link melchett
+```
+
+This will symlink `melchett` into the consumer's `node_modules` folder and allow you to make changes to `melchett` without having to commit or reinstall.
+
+Be sure to read the [contributing document](./CONTRIBUTING.md) beforehand.
