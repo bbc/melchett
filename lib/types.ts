@@ -18,7 +18,8 @@ interface RequestConfig {
   method: 'get' | 'post',
   url: string,
   headers?: any,
-  body?: any
+  body?: any,
+  id?: string
 }
 
 interface Logger {
@@ -30,8 +31,12 @@ interface Logger {
 }
 
 type MiddlewareContext = {
+  client: {
+    name: string
+  },
   request: RequestConfig,
-  response?: any
+  response?: any,
+  error?: any
 };
 
 type MiddlewareFunc = (context: MiddlewareContext, next: () => {}) => {};
