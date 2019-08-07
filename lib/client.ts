@@ -30,15 +30,13 @@ const request = (client: HttpClient, config: RequestConfig) => {
     }
   };
 
-  const composedMiddleware = compose(client._middleware);
-
   const doRequest = async (ctx) => {
     return client._agent.request(ctx.request)
       .then((res) => ctx.response = res)
       .catch((err) => ctx.error = err);
   }
 
-  return composedMiddleware(context, doRequest)
+  return client._composedMiddleware(context, doRequest)
     .then((ctx) => ctx.response.data)
     .catch((ctx) => {
       if (!ctx.error) {
@@ -56,14 +54,21 @@ class HttpClient {
   _agent: AxiosInstance;
   _config: HttpClientConfig;
   _middleware: MiddlewareFunc[];
+  _composedMiddleware;
 
   constructor(config: HttpClientConfig) {
     this._config = { ...defaults, ...config };
     this._middleware = [];
 
+    /**
+     * Initialise middleware in correct order
+     *    Cache -> Validators -> Circuit Breaker -> Logging
+     *  */
     if (this._config.logger) {
       this._middleware.push(logging(this._config.logger));
     }
+
+    this._composedMiddleware = compose(this._middleware)
 
     this._agent = axios.create({
       timeout: this._config.timeout,
@@ -80,10 +85,6 @@ class HttpClient {
 
   post(url: string, body: any, headers?: object): Promise<any> {
     return request(this, { method: 'post', url, headers, body });
-  }
-
-  useCache(cache, config) {
-    this._middleware.push(caching(cache, config));
   }
 }
 
