@@ -22,17 +22,17 @@ interface RequestConfig {
 }
 
 interface Logger {
-  debug: (...args: any) => {},
-  error: (...args: any) => {},
-  info: (...args: any) => {},
-  log: (...args: any) => {},
-  warn: (...args: any) => {}
+  debug: (message?: any, ...args: any[]) => void,
+  error: (message?: any, ...args: any[]) => void,
+  info: (message?: any, ...args: any[]) => void,
+  log: (message?: any, ...args: any[]) => void,
+  warn: (message?: any, ...args: any[]) => void
 }
 
 type MiddlewareContext = {
   request: RequestConfig,
   response?: any
-}
+};
 
 type MiddlewareFunc = (context: MiddlewareContext, next: () => {}) => {};
 

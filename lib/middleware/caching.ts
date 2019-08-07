@@ -56,7 +56,8 @@ const caching = (cache, config: CacheConfig) => {
     return async (context: MiddlewareContext, next) => {
         const cachedResponse = await getFromCache(cache, context.request, config);
         if (cachedResponse) {
-            return Promise.resolve(cachedResponse);
+            context.response = cachedResponse;
+            return context;
         }
 
         await next();
@@ -64,6 +65,8 @@ const caching = (cache, config: CacheConfig) => {
         if (context.response) {
             await storeInCache(cache, context, config);
         }
+
+        return context;
     }
 }
 

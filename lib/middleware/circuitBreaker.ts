@@ -9,14 +9,14 @@ const tripPredicate = (status: number) => {
 
 const circuit = (config: CircuitBreakerConfig) => {
     return async (ctx, next) => {
-        circuitBreaker(tripPredicate, config)
-        
         if (this.circuit.opened === true) {
-            return Promise.reject({ name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${this.config.name}` });
+            ctx.error = { name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${this.config.name}` };
+            return ctx;
         }
-
+        
         await next();
-
+        
+        circuitBreaker(tripPredicate, config)
         this.circuit.fire(ctx.response.status).catch(() => { });
     }
 }

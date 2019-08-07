@@ -23,44 +23,45 @@ const request = (client: HttpClient, config: RequestConfig) => {
 
   const logParts = { url: config.url, client: client._config.name, type: 'upstream', requestId };
 
-  const successHandler = (response) => {
+  const successHandler = (ctx) => {
     // post-response (success): isValidJson, tryCache
-    let logData = logHandler(logParts, response);
-    this._config.logger.info(logData);
-    return response.data;
+    console.log('response: ', ctx.response);
+    let logData = logHandler(logParts, ctx.response);
+    client._config.logger.info(logData);
+    return ctx.response.data;
   }
 
-  const errorHandler = (error) => {
+  const errorHandler = (ctx) => {
     // post-response (error): openCircuit
 
     let customError = {}
-    if (error.response && error.response.status) {
+    if (ctx.response && ctx.response.status) {
       customError = {
-        name: `ESTATUS${error.response.status}`,
-        message: `Status code ${error.response.status} received for ${config.url}`,
-        details: error.message || ''
+        name: `ESTATUS${ctx.response.status}`,
+        message: `Status code ${ctx.response.status} received for ${config.url}`,
+        details: ctx.message || ''
       }
     }
-    else if (error.name && error.name === 'ECIRCUITBREAKER') {
+    else if (ctx.name && ctx.name === 'ECIRCUITBREAKER') {
       customError = {
-        name: error.name,
-        message: error.message
+        name: ctx.name,
+        message: ctx.message
       }
     }
-    else if (error.code && error.code === 'ECONNABORTED') {
+    else if (ctx.code && ctx.code === 'ECONNABORTED') {
       customError = {
-        name: error.code,
-        message: error.message
+        name: ctx.code,
+        message: ctx.message
       }
     }
     else {
       customError = {
         name: `EUNKNOWN`,
-        message: error.message
+        message: ctx.message
       }
     }
 
-    let logData = logHandler(logParts, error.response);
+    let logData = logHandler(logParts, ctx.response);
     return { ...customError, ...logData }
   }
 
@@ -74,13 +75,56 @@ const request = (client: HttpClient, config: RequestConfig) => {
     }
   }
 
+  const func1 = async (ctx, next) => {
+    console.log('func1 ctx: ', ctx);
+    console.log(1);
+
+    // testing short-circuit response
+    const res = {
+      response: {
+        headers: {
+          'cache-control': 'no-cache'
+        },
+        data: '<lol></lol>'
+      }
+    };
+
+    return res;
+
+    await next();
+
+    // console.log('func2 2nd invoc ctx:', ctx);
+    console.log(4);
+    return ctx;
+  }
+
+  const func2 = async (ctx, next) => {
+    console.log('func2 ctx: ', ctx);
+    console.log(2);
+
+    await next();
+
+    // console.log('func2 2nd invoc ctx:', ctx);
+    console.log(3);
+    return ctx;
+  }
+
+  client._middleware.push(func1);
+  client._middleware.push(func2);
+
   const composedMiddleware = compose(client._middleware);
 
-  return composedMiddleware({ request: config }, this._agent.request(config))
+  const doRequest = async (ctx) => {
+    return client._agent.request(ctx.request)
+      .then((res) => ctx.response = res)
+      .catch((err) => ctx.error = err);
+  }
+
+  return composedMiddleware({ request: config }, doRequest)
     .then(successHandler)
     .catch(errorHandler);
-
 }
+
 class HttpClient {
   _agent: AxiosInstance;
   _config: HttpClientConfig;
@@ -88,6 +132,7 @@ class HttpClient {
 
   constructor(config: HttpClientConfig) {
     this._config = { ...defaults, ...config };
+    this._middleware = [];
 
     this._agent = axios.create({
       timeout: this._config.timeout,
@@ -97,8 +142,6 @@ class HttpClient {
       validateStatus: (status) => status >= 200 && status < 500
     });
   }
-
-
 
   get(url: string, headers?: object): Promise<any> {
     return request(this, { method: 'get', url, headers });
