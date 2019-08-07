@@ -1,4 +1,4 @@
-import { logging } from './logging';
+import { logWriter } from './logWriter';
 
 describe('Logging middleware', () => {
     it.skip('fake',()=>{

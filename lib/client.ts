@@ -1,11 +1,11 @@
 import axios, { AxiosInstance } from 'axios';
 import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
-import { logging } from './middleware/logging';
 import { caching } from './middleware/caching';
 // import { circuitBreaker } from './middleware/circuitBreaker';
 import { validStatus } from './middleware/validStatus';
 import { validJson } from './middleware/validJson';
+import { settleResponse } from './utils/settleResponse';
 
 const request = (client: HttpClient, config: RequestConfig) => {
   const requestId = uuidv4();
@@ -27,17 +27,8 @@ const request = (client: HttpClient, config: RequestConfig) => {
   }
 
   return client._composedMiddleware(context, doRequest)
-    .then((ctx: MiddlewareContext) => Promise.resolve(ctx.response.data))
-    .catch((ctx: MiddlewareContext) => {
-      if (!ctx.error) {
-        ctx.error = {
-          name: `EUNKNOWN`,
-          message: 'An unknown error occurred'
-        }
-      }
-
-      return Promise.reject(ctx.error);
-    });
+    .then(settleResponse(client._config.logger))
+    .catch(settleResponse(client._config.logger));
 }
 
 class HttpClient {
@@ -59,7 +50,7 @@ class HttpClient {
 
     /**
      * Initialise middleware in correct order
-     *    Cache -> Valid JSON -> Valid Status -> Circuit Breaker -> Logging
+     *    Cache -> Valid JSON -> Valid Status -> Circuit Breaker
      *  */
     if (this._config.cache) {
       this._middleware.push(caching(this._config.cache));
@@ -68,10 +59,6 @@ class HttpClient {
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));
 
-    if (this._config.logger) {
-      this._middleware.push(logging(this._config.logger));
-    }
-
     this._composedMiddleware = compose(this._middleware)
 
     this._agent = axios.create({
@@ -79,7 +66,7 @@ class HttpClient {
       headers: {
         'User-Agent': this._config.userAgent,
       },
-      validateStatus: (status) => status >= 200 && status < 500
+      validateStatus: () => true
     });
   }
 
