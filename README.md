@@ -39,7 +39,7 @@ To enable, set the `logger` property in the client configuration object to an ob
 * `info`
 * `log`
 * `warn`
-Each function should have the signature: `(message?: any, ...args: any[]) => void`.
+Each function should have the signature: `(message?: any, ...args: any[]) => void`. (e.g. `console` or [winston](https://github.com/winstonjs/winston#readme))
 
 If enabled, the request configuration of a given request is always logged (regardless of whether the response is resolved). This log has the following structure;
 ```
