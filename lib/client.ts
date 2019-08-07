@@ -3,7 +3,7 @@ import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
 import { logging } from './middleware/logging';
 import { caching } from './middleware/caching';
-import { circuit } from './middleware/circuitBreaker';
+// import { circuitBreaker } from './middleware/circuitBreaker';
 import { validStatus } from './middleware/validStatus';
 import { validJson } from './middleware/validJson';
 
@@ -27,7 +27,7 @@ const request = (client: HttpClient, config: RequestConfig) => {
   }
 
   return client._composedMiddleware(context, doRequest)
-    .then((ctx) => ctx.response.data)
+    .then((ctx) => Promise.resolve(ctx.response.data))
     .catch((ctx) => {
       if (!ctx.error) {
         ctx.error = {
@@ -36,7 +36,7 @@ const request = (client: HttpClient, config: RequestConfig) => {
         }
       }
 
-      return ctx.error;
+      return Promise.reject(ctx.error);
     });
 }
 
