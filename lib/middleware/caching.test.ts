@@ -1,6 +1,19 @@
 import wreck from '@hapi/wreck';
 import { isCacheable, getCacheControl, getCacheTtl, getFromCache, storeInCache, caching } from './caching';
 
+const mockCacheStore = {
+    isReady: () => true,
+    get: (key: { segment: string, id: string }) => Promise.resolve(),
+    set: (key: { segment: string, id: string }, value: any, ttl: number) => Promise.resolve(),
+    start: () => Promise.resolve()
+};
+
+const mockCacheConfig = {
+    doNotVary: [],
+    cacheTtl: 200,
+    ignoreErrors: true
+};
+
 describe('Caching middleware', () => {
     describe('isCacheable', () => {
         it('POST requests not cachable', async () => {
@@ -129,10 +142,9 @@ describe('Caching middleware', () => {
         it('return lowest of max-age or config value', async () => {
             // Arrange
             const response = { headers: { 'cache-control': 'max-age=100' } };
-            const config = { cacheTtl: 200 };
 
             // Act
-            const result = getCacheTtl(response, config);
+            const result = getCacheTtl(response, mockCacheConfig);
 
             // Assert
             expect(result).toEqual(100);
@@ -144,11 +156,13 @@ describe('Caching middleware', () => {
             // Arrange
             const mockGet = jest.fn();
 
-            const cache = { get: mockGet };
+            const store = { ...mockCacheStore, set: mockGet }
+
+            const cache = { store, doNotVary: [], cacheTtl: 200, ignoreErrors: true };
             const context = { request: { url: 'https://www.bbc.co.uk', headers: {} } };
 
             // Act
-            getFromCache(cache, context, { doNotVary: [] });
+            getFromCache(cache, context);
 
             // Assert
             expect(mockGet).toBeCalled();
@@ -160,16 +174,16 @@ describe('Caching middleware', () => {
             // Arrange
             const mockSet = jest.fn();
 
-            const cache = { set: mockSet };
+            const store = { ...mockCacheStore, set: mockSet }
+
+            const cache = { store, ...mockCacheConfig };
             const context = {
                 request: { url: 'https://www.bbc.co.uk', headers: {} },
                 response: { config: { method: 'get' }, headers: { 'cache-control': 'max-age=100' } }
             };
 
-            const config = { doNotVary: [], cacheTtl: 200 };
-
             // Act
-            storeInCache(cache, context, config);
+            storeInCache(cache, context);
 
             // Assert
             expect(mockSet).toBeCalled();
@@ -179,16 +193,16 @@ describe('Caching middleware', () => {
             // Arrange
             const mockSet = jest.fn();
 
-            const cache = { set: mockSet };
+            const store = { ...mockCacheStore, set: mockSet }
+
+            const cache = { store, ...mockCacheConfig };
             const context = {
                 request: { url: 'https://www.bbc.co.uk', headers: {} },
                 response: { config: { method: 'post' }, headers: { 'cache-control': 'max-age=100' } }
             };
 
-            const config = { doNotVary: [], cacheTtl: 200 };
-
             // Act
-            storeInCache(cache, context, config);
+            storeInCache(cache, context);
 
             // Assert
             expect(mockSet).not.toBeCalled();
