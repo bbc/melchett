@@ -1,26 +1,29 @@
-import circuitBreaker from 'opossum';
+import circuitBreaker, { CircuitBreaker } from 'opossum';
 
-const tripPredicate = (status: number) => {
-    if (status < 500) {
-        return Promise.resolve();
-    }
-    return Promise.reject();
-}
+const tripPredicate = (status: number) => status < 500 ? Promise.resolve() : Promise.reject()
 
-const circuit = (config: CircuitBreakerConfig) => {
-    return async (ctx, next) => {
-        if (this.circuit.opened === true) {
-            ctx.error = { name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${this.config.name}` };
-            return ctx;
+let circuit: CircuitBreaker
+
+const circuitBreakerHandler = (config: CircuitBreakerConfig) => {
+    return async (context: MiddlewareContext, next) => {
+        if (typeof circuit !== 'function') {
+            circuit = circuitBreaker(tripPredicate, config);
+        }
+
+        if (circuit.opened === true) {
+            context.error = { name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${context.client.name}` };
+            return context;
         }
         
         await next();
         
-        circuitBreaker(tripPredicate, config)
-        this.circuit.fire(ctx.response.status).catch(() => { });
+        
+        circuit.fire(context.response.status).catch(() => { 
+            // TODO what should we do here?? log ? call some service to update metrics? telemetry?
+        });
     }
 }
 
 export {
-    circuit
+    circuitBreakerHandler as circuitBreaker
 }

@@ -3,9 +3,10 @@ import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
 import { logging } from './middleware/logging';
 import { caching } from './middleware/caching';
-// import { circuitBreaker } from './middleware/circuitBreaker';
+import { circuitBreaker } from './middleware/circuitBreaker';
 import { validStatus } from './middleware/validStatus';
 import { validJson } from './middleware/validJson';
+import { CircuitBreaker } from 'opossum';
 
 const request = (client: HttpClient, config: RequestConfig) => {
   const requestId = uuidv4();
@@ -67,6 +68,7 @@ class HttpClient {
 
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));
+    this._middleware.push(circuitBreaker(this._config.circuitBreaker));
 
     if (this._config.logger) {
       this._middleware.push(logging(this._config.logger));
