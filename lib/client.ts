@@ -4,18 +4,8 @@ import compose from 'koa-compose';
 import { logging } from './middleware/logging';
 import { caching } from './middleware/caching';
 import { circuit } from './middleware/circuitBreaker';
-import { isValidJson } from './middleware/validJson';
-
-const defaults = {
-  userAgent: 'itv/' + process.env.npm_package_name + '/' + process.env.npm_package_version,
-  timeout: 1500,
-  retries: 1,
-  circuitBreaker: {
-    enabled: true,
-    errorThresholdPercentage: 10,
-    resetTimeout: 30000
-  }
-}
+import { validStatus } from './middleware/validStatus';
+import { validJson } from './middleware/validJson';
 
 const request = (client: HttpClient, config: RequestConfig) => {
   const requestId = uuidv4();
@@ -57,13 +47,27 @@ class HttpClient {
   _composedMiddleware;
 
   constructor(config: HttpClientConfig) {
+    const defaults = {
+      userAgent: 'itv/' + process.env.npm_package_name + '/' + process.env.npm_package_version,
+      timeout: 1500,
+      retries: 1,
+      circuitBreaker: {
+        errorThresholdPercentage: 10,
+        resetTimeout: 30000
+      },
+      successPredicate: (status: number) => status >= 200 && status < 500
+    };
+
     this._config = { ...defaults, ...config };
     this._middleware = [];
 
     /**
      * Initialise middleware in correct order
-     *    Cache -> Validators -> Circuit Breaker -> Logging
-     *  */
+     *    Cache -> Valid JSON -> Valid Status -> Circuit Breaker -> Logging
+     *  */    
+    this._middleware.push(validJson);
+    this._middleware.push(validStatus(this._config.successPredicate));
+
     if (this._config.logger) {
       this._middleware.push(logging(this._config.logger));
     }
