@@ -12,7 +12,7 @@ const request = (client: HttpClient, config: RequestConfig) => {
   config.headers = config.headers || {};
   config.headers['X-Correlation-Id'] = requestId;
 
-  const context = {
+  const context: MiddlewareContext = {
     client: { name: client._config.name },
     request: {
       id: requestId,
@@ -20,19 +20,19 @@ const request = (client: HttpClient, config: RequestConfig) => {
     }
   };
 
-  const doRequest = async (ctx) => {
+  const doRequest = async (ctx: MiddlewareContext) => {
     return client._agent.request(ctx.request)
       .then((res) => ctx.response = res)
       .catch((err) => ctx.error = err);
   }
 
   return client._composedMiddleware(context, doRequest)
-    .then((ctx) => Promise.resolve(ctx.response.data))
-    .catch((ctx) => {
+    .then((ctx: MiddlewareContext) => Promise.resolve(ctx.response.data))
+    .catch((ctx: MiddlewareContext) => {
       if (!ctx.error) {
         ctx.error = {
           name: `EUNKNOWN`,
-          message: ctx.message || ''
+          message: 'An unknown error occurred'
         }
       }
 
