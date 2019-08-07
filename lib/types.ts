@@ -11,7 +11,8 @@ interface CircuitBreakerConfig {
 interface CacheConfig {
   maxSizeInMB: number,
   cacheTtl: number,
-  doNotVary: string[]
+  doNotVary: string[],
+  ignoreErrors: boolean
 }
 
 interface RequestConfig {

@@ -2,7 +2,7 @@ import { parseCacheControl } from '@hapi/wreck';
 import { getRequestHash } from '../utils/requestHash';
 
 const defaults = {
-    maxSizeInMB : 500,
+    maxSizeInMB: 500,
     cacheTtl: 7200,
     doNotVary: []
 }
@@ -29,7 +29,7 @@ const getCacheControl = (response) => {
 
 const getCacheTtl = (response, config) => {
     const cacheControl = getCacheControl(response);
-    
+
     if (cacheControl) {
         return Math.min(cacheControl['max-age'], config.cacheTtl)
     }
@@ -54,6 +54,18 @@ const storeInCache = (cache, context, config) => {
 
 const caching = (cache, config: CacheConfig) => {
     return async (context: MiddlewareContext, next) => {
+        if (!cache.isReady()) {
+            try {
+                await cache.start();
+            } catch (err) {
+                if (config.ignoreErrors) {
+                    throw err;
+                } else {
+                    return next();
+                }
+            }
+        }
+
         const cachedResponse = await getFromCache(cache, context.request, config);
         if (cachedResponse) {
             context.response = cachedResponse;
@@ -70,7 +82,7 @@ const caching = (cache, config: CacheConfig) => {
     }
 }
 
-export { 
+export {
     isCacheable,
     getCacheControl,
     getCacheTtl,

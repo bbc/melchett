@@ -51,10 +51,6 @@ class HttpClient {
       userAgent: 'itv/' + process.env.npm_package_name + '/' + process.env.npm_package_version,
       timeout: 1500,
       retries: 1,
-      circuitBreaker: {
-        errorThresholdPercentage: 10,
-        resetTimeout: 30000
-      },
       successPredicate: (status: number) => status >= 200 && status < 500
     };
 
@@ -64,7 +60,8 @@ class HttpClient {
     /**
      * Initialise middleware in correct order
      *    Cache -> Valid JSON -> Valid Status -> Circuit Breaker -> Logging
-     *  */    
+     *  */
+
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));
 
