@@ -5,14 +5,14 @@ const settleResponse = (logger?: Logger) => (ctx: MiddlewareContext) => {
         logWriter(logger, ctx);
     }
 
-    if (ctx.response && ctx.response.data) {
+    if (!ctx.error && ctx.response && ctx.response.data) {
         return Promise.resolve(ctx.response.data)
     }
 
     if (!ctx.error) {
         ctx.error = {
-            name: `EUNKNOWN`,
-            message: 'An unknown error occurred'
+            errorName: `EUNKNOWN`,
+            errorMessage: 'An unknown error occurred'
         }
     }
 

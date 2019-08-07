@@ -3,8 +3,7 @@ const logWriter = (logger: Logger, ctx: MiddlewareContext) => {
         url: ctx.request.url,
         client: ctx.client.name,
         type: 'upstream',
-        requestId: ctx.request.id,
-        duration: ctx.response
+        requestId: ctx.request.id
     };
 
     if (ctx.error) {
