@@ -1,7 +1,7 @@
 import nock from 'nock';
 import { HttpClient } from './../../lib/client';
 
-describe('melchett client', () => {
+describe.skip('melchett client', () => {
     describe('GET', () => {
         beforeAll(async () => {
             nock('http://testurl.com')

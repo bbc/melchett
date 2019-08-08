@@ -159,7 +159,10 @@ describe('Caching middleware', () => {
             const store = { ...mockCacheStore, set: mockGet }
 
             const cache = { store, doNotVary: [], cacheTtl: 200, ignoreErrors: true };
-            const context = { request: { url: 'https://www.bbc.co.uk', headers: {} } };
+            const context: MiddlewareContext = {
+                client: { name: 'test' },
+                request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+            };
 
             // Act
             getFromCache(cache, context);
@@ -177,8 +180,9 @@ describe('Caching middleware', () => {
             const store = { ...mockCacheStore, set: mockSet }
 
             const cache = { store, ...mockCacheConfig };
-            const context = {
-                request: { url: 'https://www.bbc.co.uk', headers: {} },
+            const context: MiddlewareContext = {
+                client: { name: 'test' },
+                request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
                 response: { config: { method: 'get' }, headers: { 'cache-control': 'max-age=100' } }
             };
 
@@ -196,8 +200,9 @@ describe('Caching middleware', () => {
             const store = { ...mockCacheStore, set: mockSet }
 
             const cache = { store, ...mockCacheConfig };
-            const context = {
-                request: { url: 'https://www.bbc.co.uk', headers: {} },
+            const context: MiddlewareContext = {
+                client: { name: 'test' },
+                request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
                 response: { config: { method: 'post' }, headers: { 'cache-control': 'max-age=100' } }
             };
 

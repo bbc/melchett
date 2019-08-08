@@ -9,9 +9,9 @@ interface CircuitBreakerConfig {
 }
 
 interface CacheConfig {
-  cacheTtl: number,
-  doNotVary: string[],
-  ignoreErrors: boolean
+  cacheTtl?: number,
+  doNotVary?: string[],
+  ignoreErrors?: boolean
 }
 
 interface CacheStore {
@@ -51,13 +51,11 @@ type MiddlewareContext = {
 type MiddlewareFunc = (context: MiddlewareContext, next: () => {}) => {};
 
 interface HttpClientConfig {
-  name: string,
+  name?: string,
   timeout?: number,
-  retries?: number,
   cache?: {
     store: CacheStore
   } & CacheConfig,
-  retryDelay?: number,
   successPredicate?: (status: number) => boolean,
   userAgent?: string,
   logger?: Logger,

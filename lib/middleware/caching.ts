@@ -21,10 +21,10 @@ const getCacheControl = (response) => {
     return parseCacheControl(headerValues);
 }
 
-const getCacheKeyObject = (context, config: CacheConfig) => {
+const getCacheKeyObject = (ctx: MiddlewareContext, config: CacheConfig) => {
     return {
-        segment: 'melchett:v1.0',
-        id: getRequestHash(context.request, config.doNotVary)
+        segment: `melchett:v1.0:${ctx.client.name}`,
+        id: getRequestHash(ctx.request, config.doNotVary)
     }
 }
 
@@ -36,17 +36,29 @@ const getCacheTtl = (response, config: CacheConfig) => {
     }
 }
 
-const getFromCache = (cache: CacheCombined, context) => {
-    const cacheKeyObject = getCacheKeyObject(context, cache);
+const getFromCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
+    const cacheKeyObject = getCacheKeyObject(ctx, cache);
 
-    return cache.store.get(cacheKeyObject);
+    return cache.store.get(cacheKeyObject)
+        .then((cacheObject) => {
+            if (cacheObject && cacheObject.item) {
+                return JSON.parse(cacheObject.item)
+            }
+        });
 }
 
-const storeInCache = (cache: CacheCombined, context) => {
-    if (isCacheable(context.response)) {
-        const cacheKeyObject = getCacheKeyObject(context, cache);
+const storeInCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
+    if (isCacheable(ctx.response)) {
+        const cacheKeyObject = getCacheKeyObject(ctx, cache);
 
-        return cache.store.set(cacheKeyObject, context.response.body, getCacheTtl(context.response, cache));
+        const prunedResponse = {
+            status: ctx.response.status,
+            statusText: ctx.response.statusText,
+            headers: { ...ctx.response.headers, 'x-melchett-cache': 'HIT', 'x-response-time': undefined },
+            data: ctx.response.data
+        };
+
+        cache.store.set(cacheKeyObject, JSON.stringify(prunedResponse), getCacheTtl(ctx.response, cache));
     }
 }
 
@@ -59,38 +71,59 @@ const caching = (cache: CacheCombined) => {
 
     cache = { ...defaults, ...cache };
 
-    return async (context: MiddlewareContext, next) => {
+    if (!~cache.doNotVary.indexOf('x-correlation-id')) {
+        cache.doNotVary.push('x-correlation-id');
+    }
+
+    return async (ctx: MiddlewareContext, next) => {
         if (!cache.store.isReady()) {
             try {
                 await cache.store.start();
             } catch (err) {
                 if (!cache.ignoreErrors) {
-                    throw err;
+                    ctx.error = {
+                        error_name: 'ECACHEINIT',
+                        error_message: 'Cache engine failed to start'
+                    };
+
+                    return Promise.reject(ctx);
                 } else {
                     return next();
                 }
             }
         }
 
-        const cachedResponse = await getFromCache(cache, context.request);
+        const cachedResponse = await getFromCache(cache, ctx);
         if (cachedResponse) {
-            context.response = cachedResponse;
-            return context;
+            ctx.response = cachedResponse;
+            return ctx;
         }
 
         await next();
 
-        if (context.response) {
-            await storeInCache(cache, context);
+        if (ctx.response) {
+            try {
+                await storeInCache(cache, ctx);
+            } catch (err) {
+                if (!cache.ignoreErrors) {
+                    ctx.error = {
+                        error_name: 'ECACHESTORE',
+                        error_message: 'Failed to write response to cache'
+                    };
+
+                    return Promise.reject(ctx);
+                }
+            }
         }
 
-        return context;
+        return ctx;
     }
 }
 
 export {
     isCacheable,
     getCacheControl,
+    getCacheKeyObject,
     getCacheTtl,
     getFromCache,
     storeInCache,
