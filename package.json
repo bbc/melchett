@@ -8,7 +8,8 @@
     "compile": "tsc",
     "test": "jest",
     "test:spec": "npx jest lib",
-    "test:endtoend": "npx jest test/endtoend"
+    "test:endtoend": "npx jest test/endtoend",
+    "preversion": "npm test"
   },
   "repository": {
     "type": "git",
