@@ -1,7 +1,7 @@
 {
   "name": "melchett",
   "version": "1.0.0",
-  "description": "",
+  "description": "A plugin-based HTTP client for NodeJS",
   "main": "dist/client.js",
   "scripts": {
     "build": "npm run compile",
@@ -18,8 +18,8 @@
   "files": [
     "dist"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "BBC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/bbc/melchett/issues"
   },
