@@ -26,27 +26,20 @@
   "homepage": "https://github.com/bbc/melchett#readme",
   "dependencies": {
     "@hapi/wreck": "^15.0.1",
-    "@types/catbox": "^10.0.6",
     "@types/node": "^12.0.10",
     "@types/opossum": "^1.10.1",
-    "@types/split": "^1.0.0",
-    "axios-cache-adapter": "^2.3.3",
-    "axios-cache-plugin": "^0.1.0",
+    "axios": "^0.19.0",
     "koa-compose": "^4.1.0",
-    "opossum": "^2.3.0",
-    "split": "^1.0.1",
-    "winston": "^2.3.0"
+    "opossum": "^2.3.0"
   },
   "devDependencies": {
     "@types/jest": "^24.0.15",
     "jest": "^24.8.0",
     "nock": "^10.0.6",
-    "npm": "^6.10.0",
     "ts-jest": "^24.0.2",
     "ts-node": "^7.0.1",
     "tslint": "^5.14.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.5.2",
-    "watch": "^1.0.2"
+    "typescript": "^3.5.2"
   }
 }
