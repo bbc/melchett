@@ -2,7 +2,7 @@
   "name": "melchett",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/lib/client.js",
+  "main": "dist/client.js",
   "scripts": {
     "build": "npm run compile",
     "compile": "tsc",
