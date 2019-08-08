@@ -58,5 +58,6 @@ interface HttpClientConfig {
   } & CacheConfig,
   successPredicate?: (status: number) => boolean,
   userAgent?: string,
-  logger?: Logger
+  logger?: Logger,
+  circuitBreaker: CircuitBreakerConfig
 }

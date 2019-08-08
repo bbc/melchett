@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
 import { caching } from './middleware/caching';
-// import { circuitBreaker } from './middleware/circuitBreaker';
+import { circuitBreaker } from './middleware/circuitBreaker';
 import { validStatus } from './middleware/validStatus';
 import { validJson } from './middleware/validJson';
 import { settleResponse } from './utils/settleResponse';
@@ -59,6 +59,7 @@ class HttpClient {
 
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));
+    this._middleware.push(circuitBreaker(this._config.circuitBreaker));
 
     this._composedMiddleware = compose(this._middleware)
 
