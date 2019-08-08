@@ -11,8 +11,8 @@ const settleResponse = (logger?: Logger) => (ctx: MiddlewareContext) => {
 
     if (!ctx.error) {
         ctx.error = {
-            errorName: `EUNKNOWN`,
-            errorMessage: 'An unknown error occurred'
+            error_name: `EUNKNOWN`,
+            error_message: 'An unknown error occurred'
         }
     }
 

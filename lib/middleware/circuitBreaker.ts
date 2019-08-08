@@ -10,7 +10,7 @@ const tripPredicate = (status: number) => {
 const circuit = (config: CircuitBreakerConfig) => {
     return async (ctx, next) => {
         if (this.circuit.opened === true) {
-            ctx.error = { errorName: `ECIRCUITBREAKER`, errorMessage: `Circuit breaker is open for ${this.config.name}` };
+            ctx.error = { error_name: `ECIRCUITBREAKER`, error_message: `Circuit breaker is open for ${this.config.name}` };
             return ctx;
         }
         

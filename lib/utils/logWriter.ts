@@ -3,22 +3,22 @@ const logWriter = (logger: Logger, ctx: MiddlewareContext) => {
         url: ctx.request.url,
         client: ctx.client.name,
         type: 'upstream',
-        requestId: ctx.request.id
+        request_id: ctx.request.id
     };
 
     if (ctx.error) {
         logger.error({ ...requestLog, ...ctx.error });
     } else {
         const responseLog = {
-            statusCode: ctx.response.status,
-            contentLength: ctx.response.headers['content-length'],
-            melchettCache: ctx.response.headers['x-melchett-cache'] || 'MISS'
+            status_code: ctx.response.status,
+            content_length: ctx.response.headers['content-length'],
+            melchett_cache: ctx.response.headers['x-melchett-cache'] || 'MISS'
         };
 
         const upstreamDuration = parseFloat(ctx.response.headers['x-response-time']);
 
         if (!Number.isNaN(upstreamDuration)) {
-            responseLog['upstreamDuration'] = upstreamDuration;
+            responseLog['upstream_duration'] = upstreamDuration;
         }
 
         logger.info({ ...requestLog, ...responseLog });

@@ -47,32 +47,32 @@ If enabled, the request configuration of a given request is always logged (regar
     url: 'https://www.bbc.co.uk',
     client: 'http',
     type: 'upstream',
-    requestId: '89dce102-2040-40b9-80ae-0a72c5aaa3db'
+    request_id: '89dce102-2040-40b9-80ae-0a72c5aaa3db'
 }
 ```
 
 If the response completes successfully, the following additional structure is added to the log object:
 ```
 {
-    statusCode: 200,
-    contentLength: '7074',
-    melchettCache: 'MISS'
+    status_code: 200,
+    content_length: '7074',
+    melchett_cache: 'MISS'
 }
 ```
 
 Additionally, if the response was not served from cache and there is an `x-response-time` header, its value is added as:
 ```
 {
-    upstreamDuration: 24.82
+    upstream_duration: 24.82
 }
 ```
 
 Alternatively, if an error occurs at some point in the request/response chain it is added to the log object. Error objects typically have the following structure:
 ```
 {
-    errorName: 'ESTATUS500',
-    errorMessage: 'Status code 500 received',
-    errorDetails: 'Internal Server Error'
+    error_name: 'ESTATUS500',
+    error_message: 'Status code 500 received',
+    error_details: 'Internal Server Error'
 }
 ```
 
