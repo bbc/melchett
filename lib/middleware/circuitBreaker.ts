@@ -1,24 +1,22 @@
-import circuitBreaker, { CircuitBreaker } from 'opossum';
+import circuitBreaker from 'opossum';
 
 const tripPredicate = (status: number) => status < 500 ? Promise.resolve() : Promise.reject()
 
-let circuit: CircuitBreaker
-
 const circuitBreakerHandler = (config: CircuitBreakerConfig) => {
-    return async (context: MiddlewareContext, next) => {
-        if (typeof circuit !== 'function') {
-            circuit = circuitBreaker(tripPredicate, config);
+    return async (ctx: MiddlewareContext, next) => {
+        if (!ctx.client.circuit) {
+            ctx.client.circuit = circuitBreaker(tripPredicate, config);
         }
 
-        if (circuit.opened === true) {
-            context.error = { name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${context.client.name}` };
-            return context;
+        if (ctx.client.circuit.opened === true) {
+            ctx.error = { name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${ctx.client.name}` };
+            return ctx;
         }
         
         await next();
         
         
-        circuit.fire(context.response.status).catch(() => undefined);
+        ctx.client.circuit.fire(ctx.response.status).catch(() => undefined);
     }
 }
 

@@ -10,7 +10,7 @@ const defaultContext: MiddlewareContext = {
 let isOpenCircuit = true
 jest.mock('opossum', () => () => ({ opened: isOpenCircuit, fire: () => Promise.resolve() }))
 
-describe('circuit breaker', () => {
+describe('Circuit breaker', () => {
     describe('when circuit is open', () => {
         let context
         beforeEach(() => {
