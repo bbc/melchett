@@ -56,8 +56,8 @@ interface HttpClientConfig {
   cache?: {
     store: CacheStore
   } & CacheConfig,
+  circuitBreaker?: CircuitBreakerConfig,
   successPredicate?: (status: number) => boolean,
   userAgent?: string,
-  logger?: Logger,
-  circuitBreaker: CircuitBreakerConfig
+  logger?: Logger
 }
