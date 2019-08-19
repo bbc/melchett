@@ -34,7 +34,7 @@ describe('circuit breaker', () => {
         })
     })
 
-    describe('when circuit is close', () => {
+    describe('when circuit is closed', () => {
         let context
 
         beforeEach(() => {

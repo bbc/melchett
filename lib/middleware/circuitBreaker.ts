@@ -18,9 +18,7 @@ const circuitBreakerHandler = (config: CircuitBreakerConfig) => {
         await next();
         
         
-        circuit.fire(context.response.status).catch(() => { 
-            // TODO what should we do here?? log ? call some service to update metrics? telemetry?
-        });
+        circuit.fire(context.response.status).catch(() => undefined);
     }
 }
 
