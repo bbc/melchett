@@ -59,7 +59,10 @@ class HttpClient {
 
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));
-    this._middleware.push(circuitBreaker(this._config.circuitBreaker));
+
+    if (this._config.circuitBreaker) {
+      this._middleware.push(circuitBreaker(this._config.circuitBreaker));
+    }
 
     this._composedMiddleware = compose(this._middleware)
 
