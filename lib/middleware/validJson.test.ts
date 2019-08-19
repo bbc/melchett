@@ -16,10 +16,12 @@ describe('JSON validator middleware', () => {
         const next = jest.fn();
 
         // Act
-        await validJson(mockContext, next);
+        try {
+            await validJson(mockContext, next);
+        } catch (ex) {} // Since there's no response, the promise is rejected
 
         // Assert
-        expect(next).toBeCalled();
+        expect(next).toBeCalledTimes(1);
     });
 
     it('should reject with ENOTJSON for no response', async () => {

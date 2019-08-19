@@ -154,9 +154,9 @@ describe('Caching middleware', () => {
     describe('getFromCache', () => {
         it('should retrieve from cache', async () => {
             // Arrange
-            const mockGet = jest.fn();
+            const mockGet = jest.fn().mockResolvedValue({ item: '{ "foo": "bar" }' });
 
-            const store = { ...mockCacheStore, set: mockGet }
+            const store = { ...mockCacheStore, get: mockGet }
 
             const cache = { store, doNotVary: [], cacheTtl: 200, ignoreErrors: true };
             const context: MiddlewareContext = {
