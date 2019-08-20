@@ -15,7 +15,6 @@ const circuitBreakerHandler = (config: CircuitBreakerConfig) => {
         
         await next();
         
-        
         ctx.client.circuit.fire(ctx.response.status).catch(() => undefined);
     }
 }

@@ -1,3 +1,4 @@
+import opossum from 'opossum';
 import { circuitBreaker } from './circuitBreaker';
 
 const defaultContext: MiddlewareContext = {
@@ -7,49 +8,49 @@ const defaultContext: MiddlewareContext = {
     request: { method: 'get', url: 'foo' }
 }
 
-let isOpenCircuit = true
-jest.mock('opossum', () => () => ({ opened: isOpenCircuit, fire: () => Promise.resolve() }))
+jest.mock('opossum');
 
 describe('Circuit breaker', () => {
     describe('when circuit is open', () => {
-        let context
+        let context;
+
         beforeEach(() => {
-            isOpenCircuit = true
-            context = {...defaultContext}
-        })
+            jest.mock('opossum', () => () => ({ opened: true, fire: () => Promise.resolve() }));
+            context = { ...defaultContext };
+        });
 
         it('should add an error to the context', async () => {
-            const handler = circuitBreaker({ errorThresholdPercentage: Infinity, resetTimeout: 0 })
+            const handler = circuitBreaker({ errorThresholdPercentage: Infinity, resetTimeout: 0 });
             const next = jest.fn();
-
-            await handler(context, next)
-
-            const result = {
+            
+            const expected = {
                 message: "Circuit breaker is open for client-name",
                 name: "ECIRCUITBREAKER"
-            }
+            };
 
-            expect(next).not.toBeCalled()
-            expect(context.error).toEqual(result)
-        })
-    })
+            await handler(context, next);
+            
+            expect(next).not.toBeCalled();
+            expect(context.error).toEqual(expected);
+        });
+    });
 
     describe('when circuit is closed', () => {
-        let context
+        let context;
 
         beforeEach(() => {
-            isOpenCircuit = false
-            context = {...defaultContext}
-        })
+            jest.mock('opossum', () => () => ({ opened: false, fire: () => Promise.resolve() }));
+            context = { ...defaultContext };
+        });
 
         it('should call the next function and context NOT have errors', async () => {
-            const handler = circuitBreaker({ errorThresholdPercentage: Infinity, resetTimeout: Infinity })
+            const handler = circuitBreaker({ errorThresholdPercentage: Infinity, resetTimeout: Infinity });
             const next = jest.fn();
 
-            await handler({...context, response:{status: 200}}, next)
+            await handler({ ...context, response: { status: 200 } }, next);
 
-            expect(next).toBeCalled()
-            expect(context.error).toBeUndefined()
-        })
-    })
+            expect(next).toBeCalled();
+            expect(context.error).toBeUndefined();
+        });
+    });
 });

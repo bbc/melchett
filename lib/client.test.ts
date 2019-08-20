@@ -103,7 +103,10 @@ describe('client', () => {
         beforeEach(() => {
             mockCompose.mockImplementation(() => async (context, finalFunc) => {
                 try {
-                    await finalFunc();
+                    context = {
+                        request: { 'url': 'https://www.bbc.co.uk/' }
+                    }
+                    await finalFunc(context);
                 } catch (ex) {}
                 return Promise.resolve()
             });
