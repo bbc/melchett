@@ -131,7 +131,7 @@ describe('client', () => {
             expect(mockUuid).toBeCalledTimes(1);
         });
 
-        it('should call request on axios agent', async () => {
+        it.only('should call request on axios agent', async () => {
             // Arrange
             const clientConfig: HttpClientConfig = {
                 name: 'test'
@@ -145,14 +145,10 @@ describe('client', () => {
             const mockAgentRequest = jest.fn();
 
             const client = new HttpClient(clientConfig);
-            client._composedMiddleware = jest.fn();
-            client._composedMiddleware.mockReturnValue(Promise.resolve({}));
-            client._agent = {
-                request: mockAgentRequest
-             } as any;
+            client._agent = { request: mockAgentRequest } as any;
 
             // Act
-            request(new HttpClient(clientConfig), requestConfig);
+            request(client, requestConfig);
 
             // Assert
             expect(mockAgentRequest).toBeCalledTimes(1);
