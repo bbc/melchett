@@ -6,7 +6,11 @@ const settleResponse = (logger?: Logger) => (ctx: MiddlewareContext) => {
     }
 
     if (!ctx.error && ctx.response && ctx.response.data) {
-        return Promise.resolve(ctx.response.data)
+        return Promise.resolve({
+            ...ctx.response.data,
+            headers: ctx.response.headers,
+            status: ctx.response.status
+        })
     }
 
     if (!ctx.error) {

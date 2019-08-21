@@ -43,7 +43,7 @@ class HttpClient {
       userAgent: 'melchett/v1.0',
       timeout: 1500,
       retries: 1,
-      successPredicate: (status: number) => status >= 200 && status < 500
+      successPredicate: (status: number) => status >= 200 && status < 400
     };
 
     this._config = { ...defaults, ...config };
