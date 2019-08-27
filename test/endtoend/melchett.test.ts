@@ -8,17 +8,15 @@ describe('melchett client', () => {
     // TODO test multiple client concurrency
 
     describe('GET', () => {
-        beforeEach(async () => {
-            nock('http://testurl.com')
-                .get('/x')
-                .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' })
-        });
-
-        afterAll(() => {
+        afterEach(() => {
             nock.cleanAll()
         });
 
         it('resolves with expected response', async () => {
+            nock('http://testurl.com')
+                .get('/x')
+                .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' })
+
             const client = new HttpClient({ name: 'test' });
             const response = await client.get('http://testurl.com/x')
 
@@ -32,6 +30,66 @@ describe('melchett client', () => {
                 }
             });
         });
+
+        it('times out of the upstream', async () => {
+            nock('http://testurl.com')
+                .get('/x')
+                .replyWithError({ code: 'ECONNABORTED', message: 'timeout of 1500ms exceeded', stack: 'foo' })
+
+            const client = new HttpClient({ name: 'test' });
+
+            let error
+            try {
+                await client.get('http://testurl.com/x');
+            } catch (err) {
+                error = err
+            }
+
+            expect(error).toEqual(expect.objectContaining({
+                "error_message": "timeout of 1500ms exceeded",
+                "error_name": "ECONNABORTED",
+            }))
+        });
+
+        it.skip('socket timeout', async () => {
+            nock('http://testurl.com')
+                .get('y')
+                .socketDelay(500)
+
+            const client = new HttpClient({ name: 'test' });
+
+            let error
+            try {
+                await client.get('http://testurl.com/y');
+            } catch (err) {
+                error = err
+            }
+
+            expect(error).toEqual(expect.objectContaining({
+                "error_message": "timeout of 1500ms exceeded",
+                "error_name": "ECONNABORTED",
+            }))
+        });
+
+        it('generic error', async () => {
+            nock('http://testurl.com')
+                .get('/z')
+                .replyWithError({ code: 'EXXX', message: 'generic error', stack: 'foo' })
+
+            const client = new HttpClient({ name: 'test' });
+
+            let error
+            try {
+                await client.get('http://testurl.com/z');
+            } catch (err) {
+                error = err
+            }
+
+            expect(error).toEqual(expect.objectContaining({
+                "error_message": "generic error",
+                "error_name": "EXXX",
+            }))
+        });
     });
 
     describe('POST', () => {
@@ -42,11 +100,11 @@ describe('melchett client', () => {
 
             it('resolves with expected response', async () => {
                 nock('http://testurl.com')
-                    .post('/x')
+                    .post('/a')
                     .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' });
 
                 const client = new HttpClient({ name: 'test' });
-                const response = await client.post('http://testurl.com/x', { foo: 'bar' });
+                const response = await client.post('http://testurl.com/a', { foo: 'bar' });
 
                 expect(response).toEqual({
                     status: 200,
@@ -59,15 +117,13 @@ describe('melchett client', () => {
                 });
             });
 
-            it.only('times out of the upstream', async () => {
+            it('times out of the upstream', async () => {
                 nock('http://testurl.com')
                     .post('/x')
-                    .delay(2000)
-                    .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' });
-                    // .replyWithError({ code: 'ETIMEDOUT' })
+                    .replyWithError({ code: 'ECONNABORTED', message: 'timeout of 1500ms exceeded', stack: 'foo' })
 
                 const client = new HttpClient({ name: 'test' });
-                
+
                 let error
                 try {
                     await client.post('http://testurl.com/x', { foo: 'bar' });
@@ -75,7 +131,50 @@ describe('melchett client', () => {
                     error = err
                 }
 
-                expect(error).toEqual({})
+                expect(error).toEqual(expect.objectContaining({
+                    "error_message": "timeout of 1500ms exceeded",
+                    "error_name": "ECONNABORTED",
+                }))
+            });
+
+            it.skip('socket timeout', async () => {
+                nock('http://testurl.com')
+                    .post('y')
+                    .socketDelay(500)
+
+                const client = new HttpClient({ name: 'test' });
+
+                let error
+                try {
+                    await client.post('http://testurl.com/y', { foo: 'bar' });
+                } catch (err) {
+                    error = err
+                }
+
+                expect(error).toEqual(expect.objectContaining({
+                    "error_message": "timeout of 1500ms exceeded",
+                    "error_name": "ECONNABORTED",
+                }))
+            });
+
+            it('generic error', async () => {
+                nock('http://testurl.com')
+                    .post('/z')
+                    .replyWithError({ code: 'EXXX', message: 'generic error', stack: 'foo' })
+
+                const client = new HttpClient({ name: 'test' });
+
+                let error
+                try {
+                    await client.post('http://testurl.com/z', { foo: 'bar' });
+                } catch (err) {
+                    error = err
+                }
+
+                expect(error).toEqual(expect.objectContaining({
+                    "error_message": "generic error",
+                    "error_name": "EXXX",
+                }))
             });
         });
 
@@ -90,59 +189,57 @@ describe('melchett client', () => {
         });
     });
 
-    describe('receives a not found failed http response', () => {
+    describe('receives failed http response', () => {
         it('receives a 404 response', async () => {
             nock('http://testurl.com')
                 .get('/x')
-                .reply(404, undefined, { 'x-response-time': '500', 'content-length': '500' })
-            const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: 'ESTATUS404', message: 'Status code 404 received for http://testurl.com/x', details: 'Request failed with status code 404' });
-        });
+                .reply(404)
 
-        it('receives a 300 response', async () => {
-            nock('http://testurl.com')
-                .get('/x')
-                .reply(300, undefined, { 'x-response-time': '500', 'content-length': '500' })
             const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: 'ESTATUS300', message: 'Status code 300 received for http://testurl.com/x', details: 'Request failed with status code 300' });
+
+            let error
+            try {
+                await client.get('http://testurl.com/x');
+            } catch (e) {
+                error = e
+            }
+
+            expect(error).toEqual({ error_name: 'ESTATUS404', error_message: 'Status code 404 received' });
         });
     });
 
     describe('receives a successful response ', () => {
-        beforeAll(async () => {
+        it('with data that is not an object', async () => {
             nock('http://testurl.com')
                 .get('/x')
                 .reply(200, "");
-        });
-
-        afterAll(() => {
-            nock.cleanAll()
-        });
-
-        it('with data that is not an object', async () => {
             const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: 'EUNKNOWN', message: 'Response data was not an object' });
-        });
-    });
 
-    describe('receives a successful response ', () => {
-        beforeAll(async () => {
-            nock('http://testurl.com')
-                .get('/x')
-                .reply(200, undefined);
-        });
+            let error
+            try {
+                await client.get('http://testurl.com/x');
+            } catch (e) {
+                error = e
+            }
 
-        afterAll(() => {
-            nock.cleanAll()
+            expect(error).toEqual({ error_name: 'ENOTJSON', error_message: 'Response data was not an object' });
         });
 
         it('with missing response data', async () => {
+            nock('http://testurl.com')
+                .get('/x')
+                .reply(200, undefined);
+
             const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: 'EUNKNOWN', message: 'Response data was not an object' });
+
+            let error
+            try {
+                await client.get('http://testurl.com/x');
+            } catch (e) {
+                error = e
+            }
+
+            expect(error).toEqual({ error_name: 'ENOTJSON', error_message: 'Response data was not an object' });
         });
     });
 
@@ -155,7 +252,7 @@ describe('melchett client', () => {
             }
         }
 
-        beforeAll(async () => {
+        beforeEach(async () => {
             nock('http://testurl.com')
                 .persist()
                 .get('/x')
@@ -166,11 +263,22 @@ describe('melchett client', () => {
             nock.cleanAll()
         });
 
-        it('should fire the open circuit breaker', async () => {
+        it.only('should fire the open circuit breaker', async () => {
             const client = new HttpClient(config);
-            await client.get('http://testurl.com/x');
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for test` });
+            try {
+                await client.get('http://testurl.com/x');
+            } catch (error) {
+                console.log(error, 'xxxx')
+            }
+
+            let error
+            try {
+                await client.get('http://testurl.com/x');
+            } catch (e) {
+                error = e
+            }
+
+            expect(error).toEqual({ error_name: `ECIRCUITBREAKER`, error_message: `Circuit breaker is open for test` });
         });
 
         it('should close the circuit breaker', async () => {
@@ -200,9 +308,14 @@ describe('melchett client', () => {
         });
 
         it('should return a timeout error', async () => {
-            const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: `ECONNABORTED`, message: 'timeout of 1500ms exceeded' });
+            let error
+            try {
+                const client = new HttpClient({ name: 'test' });
+                await client.get('http://testurl.com/x');
+            } catch (e) {
+                error = e
+            }
+            expect(error).toEqual({ error_name: `ECONNABORTED`, error_message: 'timeout of 1500ms exceeded' });
         });
     });
 });

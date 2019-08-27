@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
 import { caching } from './middleware/caching';
+import { agentErrors } from './middleware/agentErrors';
 import { circuitBreaker } from './middleware/circuitBreaker';
 import { validStatus } from './middleware/validStatus';
 import { validJson } from './middleware/validJson';
@@ -51,14 +52,20 @@ class HttpClient {
 
     /**
      * Initialise middleware in correct order
-     *    Cache -> Valid JSON -> Valid Status -> Circuit Breaker
-     *  */
+     *    Cache -> Valid JSON -> Valid Status -> Agent Errors -> Circuit Breaker
+     **/
+
+    //TODO add more doc explaining that this works backwards,
+    //  the first middleware to be pushed are the last one to be executed
+    //  it's part of the 'compose' idea
+
     if (this._config.cache) {
       this._middleware.push(caching(this._config.cache));
     }
 
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));
+    this._middleware.push(agentErrors);
 
     if (this._config.circuitBreaker) {
       this._middleware.push(circuitBreaker(this._config.circuitBreaker));
