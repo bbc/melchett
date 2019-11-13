@@ -6,7 +6,7 @@ describe.skip('melchett client', () => {
         beforeAll(async () => {
             nock('http://testurl.com')
                 .get('/x')
-                .reply(200, { data: 1 }, { 'x-response-time': 500, 'content-length': 500 })
+                .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' })
         });
     
         it('resolves with expected response', async () => {
@@ -23,7 +23,7 @@ describe.skip('melchett client', () => {
             it('resolves with expected response', async () => {
                 nock('http://testurl.com')
                     .post('/x')
-                    .reply(200, { data: 1 }, { 'x-response-time': 500, 'content-length': 500 });
+                    .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' });
     
                 const client = new HttpClient({ name: 'test' });
                 const response = await client.post('http://testurl.com/x', { foo: 'bar' });
@@ -52,7 +52,7 @@ describe.skip('melchett client', () => {
         it('receives a 404 response', async () => {
             nock('http://testurl.com')
                 .get('/x')
-                .reply(404, undefined, { 'x-response-time': 500, 'content-length': 500 })
+                .reply(404, undefined, { 'x-response-time': '500', 'content-length': '500' })
             const client = new HttpClient({ name: 'test' });
             const response = await client.get('http://testurl.com/x');
             expect(response).toEqual({ name: 'ESTATUS404', message: 'Status code 404 received for http://testurl.com/x', details: 'Request failed with status code 404' });
@@ -61,7 +61,7 @@ describe.skip('melchett client', () => {
         it('receives a 300 response', async () => {
             nock('http://testurl.com')
                 .get('/x')
-                .reply(300, undefined, { 'x-response-time': 500, 'content-length': 500 })
+                .reply(300, undefined, { 'x-response-time': '500', 'content-length': '500' })
             const client = new HttpClient({ name: 'test' });
             const response = await client.get('http://testurl.com/x');
             expect(response).toEqual({ name: 'ESTATUS300', message: 'Status code 300 received for http://testurl.com/x', details: 'Request failed with status code 300' });
@@ -142,7 +142,7 @@ describe.skip('melchett client', () => {
             nock('http://testurl.com')
                 .get('/x')
                 .delayConnection(2500)
-                .reply(200, { data: 1 }, { 'x-response-time': 2000, 'content-length': 500 })
+                .reply(200, { data: 1 }, { 'x-response-time': '2000', 'content-length': '500' })
         });
     
         it('should return a timeout error', async () => {

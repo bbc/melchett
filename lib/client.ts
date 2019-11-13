@@ -5,6 +5,7 @@ import { caching } from './middleware/caching';
 import { circuitBreaker } from './middleware/circuitBreaker';
 import { validStatus } from './middleware/validStatus';
 import { validJson } from './middleware/validJson';
+import { timeout } from './middleware/timeout';
 import { settleResponse } from './utils/settleResponse';
 
 const request = (client: HttpClient, config: RequestConfig) => {
@@ -51,7 +52,7 @@ class HttpClient {
 
     /**
      * Initialise middleware in correct order
-     *    Cache -> Valid JSON -> Valid Status -> Circuit Breaker
+     *    Cache -> Valid JSON -> Valid Status -> Timeout -> Circuit Breaker
      *  */
     if (this._config.cache) {
       this._middleware.push(caching(this._config.cache));
@@ -59,6 +60,7 @@ class HttpClient {
 
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));
+    this._middleware.push(timeout);
 
     if (this._config.circuitBreaker) {
       this._middleware.push(circuitBreaker(this._config.circuitBreaker));
