@@ -34,6 +34,8 @@ const getCacheTtl = (response, config: CacheConfig) => {
     if (cacheControl) {
         return Math.min(cacheControl['max-age'], config.cacheTtl)
     }
+
+    return config.cacheTtl;
 }
 
 const getFromCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
@@ -47,7 +49,7 @@ const getFromCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
         });
 }
 
-const storeInCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
+const storeInCache = async (cache: CacheCombined, ctx: MiddlewareContext) => {
     if (isCacheable(ctx.response)) {
         const cacheKeyObject = getCacheKeyObject(ctx, cache);
 
@@ -58,7 +60,7 @@ const storeInCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
             data: ctx.response.data
         };
 
-        cache.store.set(cacheKeyObject, JSON.stringify(prunedResponse), getCacheTtl(ctx.response, cache));
+        await cache.store.set(cacheKeyObject, JSON.stringify(prunedResponse), getCacheTtl(ctx.response, cache) * 1000);
     }
 }
 

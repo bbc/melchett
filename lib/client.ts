@@ -54,7 +54,7 @@ class HttpClient {
      * Initialise middleware in correct order
      *    Cache -> Valid JSON -> Valid Status -> Timeout -> Circuit Breaker
      *  */
-    if (this._config.cache) {
+    if (this._config.cache && this._config.cache.store) {
       this._middleware.push(caching(this._config.cache));
     }
 
