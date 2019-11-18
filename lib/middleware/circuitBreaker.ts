@@ -4,7 +4,7 @@ const tripPredicate = (status: number) => status < 500 ? Promise.resolve() : Pro
 
 const circuitBreakerHandler = (config: CircuitBreakerConfig) => {
     return async (ctx: MiddlewareContext, next) => {
-        if (!ctx.client.state.circuit) {
+        if (!ctx.client.state?.circuit) {
             ctx.client.state.circuit = circuitBreaker(tripPredicate, config);
         }
 
