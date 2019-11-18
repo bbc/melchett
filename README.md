@@ -16,6 +16,7 @@ Property | Type | Description | Default
 `successPredicate` | `(status: number) => boolean` | Function to determine if a response is resolved or rejected | `(status) => status >= 200 && status < 400`
 `logger` | [`Logger`](#logging) | Object implementing the common logging interface (e.g. `console` or [winston](https://github.com/winstonjs/winston#readme)). If `undefined`, logging is disabled | `undefined`
 `cache` | [`Cache`](#caching) | Object specifying caching options and a reference to a caching engine. If `undefined`, caching is disabled. See [caching](#caching) for more information | `undefined`
+`circuitBreaker` | [`CircuitBreaker`](#circuit%20breaker) | Object specifying circuit breaker options. If `undefined`, circuit breaker is disabled. See [circuit breaker](#circuit%20breaker) for more information | `undefined`
 
 ### Middleware
 Additional client features are implemented as middleware. These can be opted-into by adding the relevent property for the feature to the [client configuration object](#configuration).
@@ -31,6 +32,11 @@ Property | Type | Description | Default
 `cacheTtl` | `number` | Maximum number of seconds to store responses in cache (`max-age` is preferred if its value is lower) | `7200`
 `ignoreErrors` | `boolean` | Reject the response if a cache error occurs | `true`
 `doNotVary` | `string[]` | Array of header names that should _not_ be varied on |  `[]`
+
+#### Circuit breaker
+If requests begin to fail (status code >= 500) add a circuit breaker to prevent subsequent requests for a predefined time period. Reduced traffic can allow the upstream time to recover. [Opossum](https://github.com/nodeshift/opossum) is used under the hood to provide this functionality. Provide configuration options on the `circuitBreaker` property of the [client configuration object](#configuration).
+
+Valid configuration options can be found in the [Opossum documentation](https://nodeshift.dev/opossum/#circuitbreaker).
 
 ### Logging
 To enable, set the `logger` property in the client configuration object to an object that has the following functions:
