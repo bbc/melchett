@@ -5,7 +5,7 @@ const validStatus = (successPredicate: (status: number) => boolean) => {
         if (ctx.response && ctx.response.status && !successPredicate(ctx.response.status)) {
             ctx.error = {
                 error_name: `ESTATUS${ctx.response.status}`,
-                error_message: `Status code ${ctx.response.status} received`,
+                error_message: `Status code ${ctx.response.status} received for ${ctx.request.url}`,
                 error_details: ctx.response.message || ''
             }
             return Promise.reject(ctx);

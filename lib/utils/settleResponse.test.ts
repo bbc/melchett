@@ -60,13 +60,17 @@ describe('Response settler', () => {
             const context = {
                 ...mockContext,
                 response: {
-                    data: { foo: 'bar' }
+                    data: { foo: 'bar' },
+                    headers: { 'x-test': 'baz' },
+                    status: 200
                 }
             };
 
             // Assert
             await expect(appliedSettleResponse(context)).resolves.toMatchObject({
-                foo: 'bar'
+                body: { foo: 'bar' },
+                headers: { 'x-test': 'baz' },
+                status: 200
             });
         });
 

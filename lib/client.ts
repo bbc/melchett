@@ -14,7 +14,7 @@ const request = (client: HttpClient, config: RequestConfig) => {
   config.headers['X-Correlation-Id'] = requestId;
 
   const context: MiddlewareContext = {
-    client: { name: client._config.name },
+    client: { name: client._config.name, state: client._state },
     request: {
       id: requestId,
       ...config
@@ -37,6 +37,7 @@ class HttpClient {
   _config: HttpClientConfig;
   _middleware: MiddlewareFunc[];
   _composedMiddleware;
+  _state = {};
 
   constructor(config: HttpClientConfig) {
     const defaults = {

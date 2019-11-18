@@ -1,7 +1,7 @@
 import nock from 'nock';
 import { HttpClient } from './../../lib/client';
 
-describe.skip('melchett client', () => {
+describe('melchett client', () => {
     describe('GET', () => {
         beforeAll(async () => {
             nock('http://testurl.com')
@@ -14,7 +14,7 @@ describe.skip('melchett client', () => {
             const response = await client.get('http://testurl.com/x')
     
             expect(response.status).toEqual(200);
-            expect(response.data).toEqual(1);
+            expect(response.body).toMatchObject({ data: 1 });
         });
     });
 
@@ -29,11 +29,7 @@ describe.skip('melchett client', () => {
                 const response = await client.post('http://testurl.com/x', { foo: 'bar' });
     
                 expect(response.status).toEqual(200);
-                expect(response.data).toEqual(1);
-            });
-    
-            it('times out', async () => {
-    
+                expect(response.body).toMatchObject({ data: 1 });
             });
         });
     
@@ -54,18 +50,10 @@ describe.skip('melchett client', () => {
                 .get('/x')
                 .reply(404, undefined, { 'x-response-time': '500', 'content-length': '500' })
             const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: 'ESTATUS404', message: 'Status code 404 received for http://testurl.com/x', details: 'Request failed with status code 404' });
+            await expect(client.get('http://testurl.com/x'))
+                .rejects
+                .toMatchObject({ error_name: 'ESTATUS404', error_message: 'Status code 404 received for http://testurl.com/x' });
         });
-    
-        it('receives a 300 response', async () => {
-            nock('http://testurl.com')
-                .get('/x')
-                .reply(300, undefined, { 'x-response-time': '500', 'content-length': '500' })
-            const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: 'ESTATUS300', message: 'Status code 300 received for http://testurl.com/x', details: 'Request failed with status code 300' });
-        });    
     });
     
     describe('receives a successful response ', () => {
@@ -77,8 +65,9 @@ describe.skip('melchett client', () => {
     
         it('with data that is not an object', async () => {
             const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: 'EUNKNOWN', message: 'Response data was not an object' });
+            await expect(client.get('http://testurl.com/x'))
+                .rejects
+                .toMatchObject({ error_name: 'ENOTJSON', error_message: 'Response data was not an object' });
         });
     });
     
@@ -91,12 +80,13 @@ describe.skip('melchett client', () => {
     
         it('with missing response data', async () => {
             const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: 'EUNKNOWN', message: 'Response data was not an object' });
+            await expect(client.get('http://testurl.com/x'))
+                .rejects
+                .toMatchObject({ error_name: 'ENOTJSON', error_message: 'Response data was not an object' });
         });
     });
     
-    describe('circuit breakers ', () => {
+    describe('circuit breakers', () => {
         const config = {
             "name": "test",
             "circuitBreaker": {
@@ -114,20 +104,28 @@ describe.skip('melchett client', () => {
     
         it('should fire the open circuit breaker', async () => {
             const client = new HttpClient(config);
-            await client.get('http://testurl.com/x');
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for test` });
+
+            await client.get('http://testurl.com/x')
+                .catch(async _ => {
+                    await expect(client.get('http://testurl.com/x'))
+                        .rejects
+                        .toMatchObject({ error_name: `ECIRCUITBREAKER`, error_message: `Circuit breaker is open for test` });
+                });
         });
     
         it('should close the circuit breaker', async () => {
             const client = new HttpClient(config);
-            await client.get('http://testurl.com/x');
-            await client.get('http://testurl.com/x');
-    
-            return new Promise((resolve, reject) => {
+
+            try {
+                await client.get('http://testurl.com/x');
+                await client.get('http://testurl.com/x');
+            } catch (ex) { }
+
+            return await new Promise((resolve, reject) => {
                 setTimeout(async () => {
-                    const response = await client.get('http://testurl.com/x');
-                    resolve(expect(response).toEqual({ name: `ESTATUS500`, message: `Status code 500 received for http://testurl.com/x`, details: "Request failed with status code 500" }));
+                    resolve(await expect(client.get('http://testurl.com/x'))
+                            .rejects
+                            .toMatchObject({ error_name: `ESTATUS500`, error_message: `Status code 500 received for http://testurl.com/x` }));
                 }, 2000)
             });
         });
@@ -147,8 +145,9 @@ describe.skip('melchett client', () => {
     
         it('should return a timeout error', async () => {
             const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x');
-            expect(response).toEqual({ name: `ECONNABORTED`, message: 'timeout of 1500ms exceeded' });
+            await expect(client.get('http://testurl.com/x'))
+                .rejects
+                .toMatchObject({ error_name: `ETIMEDOUT`, error_message: 'Timeout exceeded' });
         });
     });
 });

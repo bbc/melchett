@@ -31,11 +31,17 @@ describe('client', () => {
             const config = {
                 name: 'test',
                 cache: {
-                    store: undefined
+                    store: {
+                        isReady: () => true,
+                        get: () => {},
+                        set: () => {},
+                        start: () => {}
+                    }
                 }
             };
 
             // Act
+            //@ts-ignore
             new HttpClient(config);
 
             // Assert
@@ -131,7 +137,7 @@ describe('client', () => {
             expect(mockUuid).toBeCalledTimes(1);
         });
 
-        it.only('should call request on axios agent', async () => {
+        it('should call request on axios agent', async () => {
             // Arrange
             const clientConfig: HttpClientConfig = {
                 name: 'test'
@@ -170,7 +176,7 @@ describe('client', () => {
             client._composedMiddleware.mockReturnValue(Promise.resolve({}));
 
             const expectedContext = {
-                client: { name: 'test' },
+                client: { name: 'test', state: {} },
                 request: {
                     headers: {
                         'X-Correlation-Id': 'test-uuid'

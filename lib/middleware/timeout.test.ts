@@ -3,7 +3,7 @@ import { timeout } from './timeout';
 const mockContext: MiddlewareContext = {
   client: { name: 'test' },
   request: { url: 'https://www.bbc.co.uk', method: 'get' },
-  response: { error: { code: 'ECONNABORTED' } },
+  error: { code: 'ECONNABORTED' },
 };
 
 const errorResult = {
@@ -18,7 +18,7 @@ describe('Timeout middleware', () => {
 
     // Act
     try {
-      await timeout(mockContext, next);
+      await timeout({ ...mockContext }, next);
     } catch (ex) {}
 
     // Assert
@@ -30,7 +30,7 @@ describe('Timeout middleware', () => {
     const next = jest.fn();
 
     // Assert
-    await expect(timeout(mockContext, next)).rejects.toMatchObject({
+    await expect(timeout({ ...mockContext }, next)).rejects.toMatchObject({
       error: errorResult
     });
   });

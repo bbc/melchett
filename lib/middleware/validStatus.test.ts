@@ -8,7 +8,7 @@ const mockContext: MiddlewareContext = {
 const errorResult = (status: number) => {
     return {
         error_name: `ESTATUS${status}`,
-        error_message: `Status code ${status} received`,
+        error_message: `Status code ${status} received for https://www.bbc.co.uk`,
         error_details: ''
     }
 };

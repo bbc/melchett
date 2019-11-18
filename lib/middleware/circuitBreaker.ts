@@ -4,18 +4,18 @@ const tripPredicate = (status: number) => status < 500 ? Promise.resolve() : Pro
 
 const circuitBreakerHandler = (config: CircuitBreakerConfig) => {
     return async (ctx: MiddlewareContext, next) => {
-        if (!ctx.client.circuit) {
-            ctx.client.circuit = circuitBreaker(tripPredicate, config);
+        if (!ctx.client.state.circuit) {
+            ctx.client.state.circuit = circuitBreaker(tripPredicate, config);
         }
 
-        if (ctx.client.circuit.opened === true) {
-            ctx.error = { name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for ${ctx.client.name}` };
-            return ctx;
+        if (ctx.client.state.circuit.opened === true) {
+            ctx.error = { error_name: `ECIRCUITBREAKER`, error_message: `Circuit breaker is open for ${ctx.client.name}` };
+            return Promise.reject(ctx);
         }
         
         await next();
         
-        ctx.client.circuit.fire(ctx.response.status).catch(() => undefined);
+        ctx.client.state.circuit.fire(ctx.response.status).catch(() => undefined);
     }
 }
 

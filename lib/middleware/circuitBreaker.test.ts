@@ -1,7 +1,7 @@
 import { circuitBreaker } from './circuitBreaker';
 
 const defaultContext: MiddlewareContext = {
-    client: { name: 'client-name' },
+    client: { name: 'client-name', state: {} },
     request: { method: 'get', url: 'foo' },
     response: { status: undefined }
 }
@@ -23,14 +23,12 @@ describe('Circuit breaker', () => {
             const next = jest.fn();
 
             const expected = {
-                message: "Circuit breaker is open for client-name",
-                name: "ECIRCUITBREAKER"
+                error_message: "Circuit breaker is open for client-name",
+                error_name: "ECIRCUITBREAKER"
             };
 
-            await handler(context, next);
-
+            await expect(handler(context, next)).rejects.toMatchObject({ error: expected });
             expect(next).not.toBeCalled();
-            expect(context.error).toEqual(expected);
         });
     });
 

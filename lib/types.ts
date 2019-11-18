@@ -42,7 +42,9 @@ interface Logger {
 type MiddlewareContext = {
   client: {
     name: string,
-    circuit?: any
+    state: {
+      circuit?: any
+    }
   },
   request: RequestConfig,
   response?: any,
