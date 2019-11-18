@@ -13,7 +13,7 @@ Property | Type | Description | Default
 `name` | `string` | Name to be used for logging | `http`
 `timeout` | `number` | Timeout in milliseconds | `1500`
 `userAgent` | `string` | Custom user agent for the client | `melchett/VERSION`
-`successPredicate` | `(status: number) => boolean` | Function to determine if a response is resolved or rejected | `(status) => status >= 200 && status < 500`
+`successPredicate` | `(status: number) => boolean` | Function to determine if a response is resolved or rejected | `(status) => status >= 200 && status < 400`
 `logger` | [`Logger`](#logging) | Object implementing the common logging interface (e.g. `console` or [winston](https://github.com/winstonjs/winston#readme)). If `undefined`, logging is disabled | `undefined`
 `cache` | [`Cache`](#caching) | Object specifying caching options and a reference to a caching engine. If `undefined`, caching is disabled. See [caching](#caching) for more information | `undefined`
 
