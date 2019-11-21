@@ -30,17 +30,17 @@
   },
   "homepage": "https://github.com/bbc/melchett#readme",
   "dependencies": {
-    "@hapi/wreck": "^15.0.1",
+    "@hapi/wreck": "^16.0.1",
     "axios": "^0.19.0",
     "koa-compose": "^4.1.0",
-    "opossum": "^2.3.0"
+    "opossum": "^4.2.1"
   },
   "devDependencies": {
     "@types/catbox": "^10.0.6",
     "@types/jest": "^24.0.15",
     "@types/nock": "^10.0.3",
     "@types/node": "^12.0.10",
-    "@types/opossum": "^1.10.1",
+    "@types/opossum": "^4.1.0",
     "@types/split": "^1.0.0",
     "husky": "^3.0.4",
     "jest": "^24.8.0",

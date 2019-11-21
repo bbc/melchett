@@ -7,7 +7,11 @@ const defaultContext: MiddlewareContext = {
 }
 
 const mockOpossum = { opened: false, fire: () => Promise.resolve() };
-jest.mock('opossum', () => () => mockOpossum);
+jest.mock('opossum', () => {
+    return function() {
+        return mockOpossum
+    }
+});
 
 describe('Circuit breaker', () => {
     describe('when circuit is open', () => {
