@@ -1,11 +1,11 @@
-import circuitBreaker from 'opossum';
+import CircuitBreaker from 'opossum';
 
 const tripPredicate = (status: number) => status < 500 ? Promise.resolve() : Promise.reject()
 
 const circuitBreakerHandler = (config: CircuitBreakerConfig) => {
     return async (ctx: MiddlewareContext, next) => {
         if (!ctx.client.state?.circuit) {
-            ctx.client.state.circuit = circuitBreaker(tripPredicate, config);
+            ctx.client.state.circuit = new CircuitBreaker(tripPredicate, config);
         }
 
         if (ctx.client.state.circuit.opened === true) {
