@@ -96,3 +96,5 @@ npm link melchett
 This will symlink `melchett` into the consumer's `node_modules` folder and allow you to make changes to `melchett` without having to commit or reinstall.
 
 Be sure to read the [contributing document](./CONTRIBUTING.md) beforehand.
+
+Copyright © 2019 BBC.
