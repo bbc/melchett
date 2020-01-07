@@ -97,4 +97,4 @@ This will symlink `melchett` into the consumer's `node_modules` folder and allow
 
 Be sure to read the [contributing document](./CONTRIBUTING.md) beforehand.
 
-Copyright © 2019 BBC.
+Copyright © 2020 BBC.
