@@ -9,6 +9,7 @@
     "test": "jest",
     "test:spec": "npx jest lib",
     "test:endtoend": "npx jest test/endtoend",
+    "prepublish": "npm run build",
     "preversion": "npm test"
   },
   "husky": {
