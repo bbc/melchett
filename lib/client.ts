@@ -83,7 +83,7 @@ class HttpClient {
   }
 
   post(url: string, body: any, headers?: object): Promise<any> {
-    return request(this, { method: 'post', url, headers, body });
+    return request(this, { method: 'post', url, headers, data: body });
   }
 }
 

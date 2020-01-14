@@ -27,7 +27,7 @@ interface RequestConfig {
   method: 'get' | 'post',
   url: string,
   headers?: any,
-  body?: any,
+  data?: any,
   id?: string
 }
 
