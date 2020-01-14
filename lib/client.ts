@@ -22,7 +22,7 @@ const request = (client: HttpClient, config: RequestConfig) => {
   };
 
   const doRequest = async (ctx: MiddlewareContext) => {
-    return client._agent.request(ctx.request)
+    return client._agent.request(Object.freeze(ctx.request))
       .then((res) => ctx.response = res)
       .catch((err) => ctx.error = err);
   }
