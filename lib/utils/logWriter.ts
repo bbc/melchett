@@ -1,9 +1,9 @@
 const logWriter = (logger: Logger, ctx: MiddlewareContext) => {
     const requestLog = {
-        url: ctx.request.url,
+        url: ctx.request && ctx.request.url,
         client: ctx.client.name,
         type: 'upstream',
-        request_id: ctx.request.id
+        request_id: ctx.request && ctx.request.id
     };
 
     if (ctx.error) {
