@@ -23,7 +23,7 @@ const getCacheControl = (response) => {
 
 const getCacheKeyObject = (ctx: MiddlewareContext, config: CacheConfig) => {
     return {
-        segment: `melchett:v1.0:${ctx.client.name}`,
+        segment: `${ctx.client.userAgent}:${ctx.client.name}`,
         id: getRequestHash(ctx.request, config.doNotVary)
     }
 }
@@ -56,7 +56,7 @@ const storeInCache = async (cache: CacheCombined, ctx: MiddlewareContext) => {
         const prunedResponse = {
             status: ctx.response.status,
             statusText: ctx.response.statusText,
-            headers: { ...ctx.response.headers, 'x-melchett-cache': 'HIT', 'x-response-time': undefined },
+            headers: { ...ctx.response.headers, 'x-melchett-cache': 'HIT' },
             data: ctx.response.data
         };
 

@@ -9,7 +9,7 @@ const mockLogger = {
 };
 
 const mockContext: MiddlewareContext = {
-    client: { name: 'test' },
+    client: { name: 'test', userAgent: 'melchett/test' },
     request: { url: 'https://www.bbc.co.uk', method: 'get', id: '12345' },
 };
 

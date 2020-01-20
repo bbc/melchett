@@ -1,4 +1,5 @@
 import { HttpClient, request } from './client';
+import { version } from './../package.json';
 import axios from 'axios';
 import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
@@ -176,7 +177,7 @@ describe('client', () => {
             client._composedMiddleware.mockReturnValue(Promise.resolve({}));
 
             const expectedContext = {
-                client: { name: 'test', state: {} },
+                client: { name: 'test', state: {}, userAgent: `melchett/v${version}` },
                 request: {
                     headers: {
                         'X-Correlation-Id': 'test-uuid'

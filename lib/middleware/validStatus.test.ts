@@ -1,7 +1,7 @@
 import { validStatus } from './validStatus';
 
 const mockContext: MiddlewareContext = {
-    client: { name: 'test' },
+    client: { name: 'test', userAgent: 'melchett/test' },
     request: { url: 'https://www.bbc.co.uk', method: 'get' },
 };
 
