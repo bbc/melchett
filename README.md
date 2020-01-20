@@ -17,6 +17,7 @@ Property | Type | Description | Default
 `logger` | [`Logger`](#logging) | Object implementing the common logging interface (e.g. `console` or [winston](https://github.com/winstonjs/winston#readme)). If `undefined`, logging is disabled | `undefined`
 `cache` | [`Cache`](#caching) | Object specifying caching options and a reference to a caching engine. If `undefined`, caching is disabled. See [caching](#caching) for more information | `undefined`
 `circuitBreaker` | [`CircuitBreaker`](#circuit-breaker) | Object specifying circuit breaker options. If `undefined`, circuit breaker is disabled. See [circuit breaker](#circuit-breaker) for more information | `undefined`
+`timingHeader` | `string` | Response header from which to try to parse the response time | `undefined`
 
 ### Middleware
 Additional client features are implemented as middleware. These can be opted-into by adding the relevent property for the feature to the [client configuration object](#configuration).
@@ -66,12 +67,13 @@ If the response completes successfully, the following additional structure is ad
 }
 ```
 
-Additionally, if the response was not served from cache and there is an `x-response-time` header, its value is added as:
+Additionally, if the response was not served from cache and there is an header matching the value provided in `timingHeader`, its value is added as:
 ```
 {
     upstream_duration: 24.82
 }
 ```
+If no `timingHeader` is provided or it was absent in the response, `melchett` will fall back to a less accurate timing calculation.
 
 Alternatively, if an error occurs at some point in the request/response chain it is added to the log object. Error objects typically have the following structure:
 ```

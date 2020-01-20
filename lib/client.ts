@@ -5,7 +5,7 @@ import { caching } from './middleware/caching';
 import { circuitBreaker } from './middleware/circuitBreaker';
 import { validStatus } from './middleware/validStatus';
 import { validJson } from './middleware/validJson';
-import { timeout } from './middleware/timeout';
+import { timer } from './middleware/timer';
 import { settleResponse } from './utils/settleResponse';
 
 const request = (client: HttpClient, config: RequestConfig) => {
@@ -42,7 +42,7 @@ class HttpClient {
   constructor(config: HttpClientConfig) {
     const defaults = {
       name: 'http',
-      userAgent: 'melchett/v1.0',
+      userAgent: 'melchett/v2.0',
       timeout: 1500,
       retries: 1,
       successPredicate: (status: number) => status >= 200 && status < 400
@@ -61,7 +61,7 @@ class HttpClient {
 
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));
-    this._middleware.push(timeout);
+    this._middleware.push(timer(this._config.timingHeader));
 
     if (this._config.circuitBreaker) {
       this._middleware.push(circuitBreaker(this._config.circuitBreaker));
