@@ -7,7 +7,8 @@ import { validStatus } from './middleware/validStatus';
 import { validJson } from './middleware/validJson';
 import { timer } from './middleware/timer';
 import { settleResponse } from './utils/settleResponse';
-import { version } from './../package.json';
+
+const version = require('./../package.json').version;
 
 const request = (client: HttpClient, config: RequestConfig) => {
   const requestId = uuidv4();

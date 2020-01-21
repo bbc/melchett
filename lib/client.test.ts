@@ -1,5 +1,4 @@
 import { HttpClient, request } from './client';
-import { version } from './../package.json';
 import axios from 'axios';
 import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
@@ -7,6 +6,8 @@ import * as caching from './middleware/caching';
 import * as circuitBreaker from './middleware/circuitBreaker';
 import * as validStatus from './middleware/validStatus';
 import * as settleResponse from './utils/settleResponse';
+
+const version = require('./../package.json').version;
 
 jest.mock('axios');
 jest.mock('uuid/v4');
