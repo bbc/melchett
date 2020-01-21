@@ -10,7 +10,8 @@
     "test:spec": "npx jest lib",
     "test:endtoend": "npx jest test/endtoend",
     "prepare": "npm run build",
-    "preversion": "npm test"
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags"
   },
   "husky": {
     "hooks": {
