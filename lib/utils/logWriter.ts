@@ -15,10 +15,8 @@ const logWriter = (logger: Logger, ctx: MiddlewareContext) => {
             melchett_cache: ctx.response.headers['x-melchett-cache'] || 'MISS'
         };
 
-        const upstreamDuration = parseFloat(ctx.response.headers['x-response-time']);
-
-        if (!Number.isNaN(upstreamDuration)) {
-            responseLog['upstream_duration'] = upstreamDuration;
+        if (ctx.time && ctx.time.elapsed) {
+            responseLog['upstream_duration'] = ctx.time.elapsed;
         }
 
         logger.info({ ...requestLog, ...responseLog });

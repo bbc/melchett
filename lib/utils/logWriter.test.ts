@@ -9,7 +9,7 @@ const mockLogger = {
 };
 
 const mockContext: MiddlewareContext = {
-    client: { name: 'test' },
+    client: { name: 'test', userAgent: 'melchett/test' },
     request: { url: 'https://www.bbc.co.uk', method: 'get', id: '12345' },
 };
 
@@ -114,16 +114,21 @@ describe('Log writer', () => {
             response: {
                 status: 200,
                 headers: {
-                    'content-length': '1000',
-                    'x-response-time': '23.4'
+                    'content-length': '1000'
                 }
+            },
+            time: {
+                start: 10,
+                end: 30,
+                elapsed: 20
             }
         };
 
         const responseLog = {
             status_code: 200,
             content_length: '1000',
-            melchett_cache: 'MISS'
+            melchett_cache: 'MISS',
+            upstream_duration: 20
         };
 
         // Act

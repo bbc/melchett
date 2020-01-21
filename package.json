@@ -2,14 +2,14 @@
   "name": "melchett",
   "version": "1.0.7",
   "description": "A plugin-based HTTP client for NodeJS",
-  "main": "dist/client.js",
+  "main": "dist/lib/client.js",
   "scripts": {
-    "build": "npm run compile",
+    "build": "rm -rf dist/ && npm run compile",
     "compile": "tsc",
     "test": "jest",
     "test:spec": "npx jest lib",
     "test:endtoend": "npx jest test/endtoend",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "preversion": "npm test"
   },
   "husky": {

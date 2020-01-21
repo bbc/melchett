@@ -42,13 +42,19 @@ interface Logger {
 type MiddlewareContext = {
   client: {
     name: string,
+    userAgent: string,
     state?: {
       circuit?: any
     }
   },
   request: RequestConfig,
   response?: any,
-  error?: any
+  error?: any,
+  time?: {
+    start: number,
+    end?: number,
+    elapsed?: number
+  }
 };
 
 type MiddlewareFunc = (context: MiddlewareContext, next: () => {}) => {};
@@ -62,5 +68,6 @@ interface HttpClientConfig {
   circuitBreaker?: CircuitBreakerConfig,
   successPredicate?: (status: number) => boolean,
   userAgent?: string,
-  logger?: Logger
+  logger?: Logger,
+  timingHeader?: string
 }

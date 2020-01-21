@@ -1,7 +1,7 @@
 import { circuitBreaker } from './circuitBreaker';
 
 const defaultContext: MiddlewareContext = {
-    client: { name: 'client-name', state: {} },
+    client: { name: 'client-name', userAgent: 'melchett/test', state: {} },
     request: { method: 'get', url: 'foo' },
     response: { status: undefined }
 }

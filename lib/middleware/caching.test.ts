@@ -160,7 +160,7 @@ describe('Caching middleware', () => {
 
             const cache = { store, doNotVary: [], cacheTtl: 200, ignoreErrors: true };
             const context: MiddlewareContext = {
-                client: { name: 'test' },
+                client: { name: 'test', userAgent: 'melchett/test' },
                 request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
             };
 
@@ -181,7 +181,7 @@ describe('Caching middleware', () => {
 
             const cache = { store, ...mockCacheConfig };
             const context: MiddlewareContext = {
-                client: { name: 'test' },
+                client: { name: 'test', userAgent: 'melchett/test' },
                 request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
                 response: { config: { method: 'get' }, headers: { 'cache-control': 'max-age=100' } }
             };
@@ -201,7 +201,7 @@ describe('Caching middleware', () => {
 
             const cache = { store, ...mockCacheConfig };
             const context: MiddlewareContext = {
-                client: { name: 'test' },
+                client: { name: 'test', userAgent: 'melchett/test' },
                 request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
                 response: { config: { method: 'post' }, headers: { 'cache-control': 'max-age=100' } }
             };
