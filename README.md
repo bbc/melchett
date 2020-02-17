@@ -14,7 +14,6 @@ Property | Type | Description | Default
 `timeout` | `number` | Timeout in milliseconds | `1500`
 `userAgent` | `string` | Custom user agent for the client | `melchett/VERSION`
 `successPredicate` | `(status: number) => boolean` | Function to determine if a response is resolved or rejected | `(status) => status >= 200 && status < 400`
-`logger` | [`Logger`](#logging) | Object implementing the common logging interface (e.g. `console` or [winston](https://github.com/winstonjs/winston#readme)). If `undefined`, logging is disabled | `undefined`
 `cache` | [`Cache`](#caching) | Object specifying caching options and a reference to a caching engine. If `undefined`, caching is disabled. See [caching](#caching) for more information | `undefined`
 `circuitBreaker` | [`CircuitBreaker`](#circuit-breaker) | Object specifying circuit breaker options. If `undefined`, circuit breaker is disabled. See [circuit breaker](#circuit-breaker) for more information | `undefined`
 `timingHeader` | `string` | Response header from which to try to parse the response time | `undefined`
@@ -39,16 +38,8 @@ If requests begin to fail (status code >= 500) add a circuit breaker to prevent 
 
 Valid configuration options can be found in the [Opossum documentation](https://nodeshift.dev/opossum/#circuitbreaker).
 
-### Logging
-To enable, set the `logger` property in the client configuration object to an object that has the following functions:
-* `debug`
-* `error`
-* `info`
-* `log`
-* `warn`
-Each function should have the signature: `(message?: any, ...args: any[]) => void`. (e.g. `console` or [winston](https://github.com/winstonjs/winston#readme))
-
-If enabled, the request configuration of a given request is always logged (regardless of whether the response is resolved). This log has the following structure;
+### Responses
+If enabled, the request configuration of a given request is always returned (regardless of whether the response is resolved). This has the following structure;
 ```
 {
     url: 'https://www.bbc.co.uk',
@@ -58,7 +49,7 @@ If enabled, the request configuration of a given request is always logged (regar
 }
 ```
 
-If the response completes successfully, the following additional structure is added to the log object:
+If the response completes successfully, the following additional structure is added:
 ```
 {
     status_code: 200,
@@ -75,12 +66,12 @@ Additionally, if the response was not served from cache and there is an header m
 ```
 If no `timingHeader` is provided or it was absent in the response, `melchett` will fall back to a less accurate timing calculation.
 
-Alternatively, if an error occurs at some point in the request/response chain it is added to the log object. Error objects typically have the following structure:
+Alternatively, if an error occurs at some point in the request/response chain it is added to the returned object. Error objects typically have the following structure:
 ```
 {
-    error_name: 'ESTATUS500',
-    error_message: 'Status code 500 received',
-    error_details: 'Internal Server Error'
+    name: 'ESTATUS500',
+    message: 'Status code 500 received',
+    details: 'Internal Server Error'
 }
 ```
 
