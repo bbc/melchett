@@ -64,11 +64,17 @@ describe('Response settler', () => {
             message: 'A known test error',
             details: 'Test'
         };
-
+        
         const context = { ...mockContext, error };
 
+        const expectedRequest = {
+            ...mockContext.request,
+            type: "upstream",
+            method: "get"
+        }
+
         // Assert
-        await expect(settleResponse(context)).rejects.toMatchObject(error);
+        await expect(settleResponse(context)).rejects.toMatchObject({ request: expectedRequest, response: {}, error: error });
     });
     
 });

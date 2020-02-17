@@ -75,8 +75,8 @@ describe('Timer middleware', () => {
     const next = jest.fn();
 
     const errorResult = {
-      error_name: 'ETIMEDOUT',
-      error_message: 'Timeout exceeded',
+      name: 'ETIMEDOUT',
+      message: 'Timeout exceeded',
     };
 
     // Assert

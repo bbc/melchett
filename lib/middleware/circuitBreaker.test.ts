@@ -27,8 +27,8 @@ describe('Circuit breaker', () => {
             const next = jest.fn();
 
             const expected = {
-                error_message: "Circuit breaker is open for client-name",
-                error_name: "ECIRCUITBREAKER"
+                message: "Circuit breaker is open for client-name",
+                name: "ECIRCUITBREAKER"
             };
 
             await expect(handler(context, next)).rejects.toMatchObject({ error: expected });

@@ -84,8 +84,8 @@ const caching = (cache: CacheCombined) => {
             } catch (err) {
                 if (!cache.ignoreErrors) {
                     ctx.error = {
-                        error_name: 'ECACHEINIT',
-                        error_message: 'Cache engine failed to start'
+                        name: 'ECACHEINIT',
+                        message: 'Cache engine failed to start'
                     };
 
                     return Promise.reject(ctx);
@@ -109,8 +109,8 @@ const caching = (cache: CacheCombined) => {
             } catch (err) {
                 if (!cache.ignoreErrors) {
                     ctx.error = {
-                        error_name: 'ECACHESTORE',
-                        error_message: 'Failed to write response to cache'
+                        name: 'ECACHESTORE',
+                        message: 'Failed to write response to cache'
                     };
 
                     return Promise.reject(ctx);

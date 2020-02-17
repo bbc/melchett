@@ -39,41 +39,49 @@ If requests begin to fail (status code >= 500) add a circuit breaker to prevent 
 Valid configuration options can be found in the [Opossum documentation](https://nodeshift.dev/opossum/#circuitbreaker).
 
 ### Responses
-If enabled, the request configuration of a given request is always returned (regardless of whether the response is resolved). This has the following structure;
+The request configuration of a given request is always returned (regardless of whether the response is resolved). The following example shows its structure;
 ```
 {
-    url: 'https://www.bbc.co.uk',
-    client: 'http',
-    type: 'upstream',
-    request_id: '89dce102-2040-40b9-80ae-0a72c5aaa3db'
+    request: {
+        url: 'https://www.bbc.co.uk',
+        client: 'http',
+        type: 'upstream',
+        method: 'get',
+        id: '89dce102-2040-40b9-80ae-0a72c5aaa3db'
+    }
 }
 ```
 
-If the response completes successfully, the following additional structure is added:
+If the response completes successfully, the promise is resolved and the `response` property will contain the fields shown below:
 ```
 {
-    status_code: 200,
-    content_length: '7074',
-    melchett_cache: 'MISS'
+    response: {
+        body: 'Here is a response that will inform, educate, and entertain',
+        headers: {},
+        status: 200,
+        content_length: '7074',
+        upstream_duration: 123,
+        melchett_cache: 'MISS'
+    }
 }
 ```
 
-Additionally, if the response was not served from cache and there is an header matching the value provided in `timingHeader`, its value is added as:
-```
-{
-    upstream_duration: 24.82
-}
-```
-If no `timingHeader` is provided or it was absent in the response, `melchett` will fall back to a less accurate timing calculation.
+Response that are not served from cache and contain a header matching the value provided in `timingHeader` have the header value added under the `upstream_duration` property.
 
-Alternatively, if an error occurs at some point in the request/response chain it is added to the returned object. Error objects typically have the following structure:
+If no `timingHeader` is provided or it was absent in the response, `melchett` will fall back to a less accurate timing calculation for the `upstream_duration` property.
+
+If an error occurs at some point in the request/response chain, the promise is rejected with an additional `error` field as shown:
 ```
 {
-    name: 'ESTATUS500',
-    message: 'Status code 500 received',
-    details: 'Internal Server Error'
+    error: {
+        name: 'ESTATUS500',
+        message: 'Status code 500 received',
+        details: 'Internal Server Error'
+    }
 }
 ```
+
+Rejections will still include properties under the `response` field if they are available.
 
 ## Contributing
 To develop `melchett` as a dependency for another package, when inside the `melchett` directory run:

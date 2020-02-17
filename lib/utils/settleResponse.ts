@@ -1,9 +1,4 @@
-const hasTime = (ctx:MiddlewareContext) => {
-    (ctx.time && ctx.time.elapsed) ? ctx.time.elapsed : undefined
-}
-
 const settleResponse = (ctx: MiddlewareContext) => {
-    
     const request = {
         url: ctx.request && ctx.request.url,
         client: ctx.client && ctx.client.name,
@@ -16,9 +11,9 @@ const settleResponse = (ctx: MiddlewareContext) => {
         body: ctx.response.data,
         headers: ctx.response.headers,
         status: ctx.response.status,
-        upstream_duration: hasTime(ctx),
-        melchett_cache: ctx.response.headers['x-melchett-cache'] || 'MISS',
         content_length: ctx.response.headers['content-length'],
+        upstream_duration: (ctx.time && ctx.time.elapsed) ? ctx.time.elapsed : undefined,
+        melchett_cache: ctx.response.headers['x-melchett-cache'] || 'MISS'
     } : {}
     
     if (!ctx.error && ctx.response) {

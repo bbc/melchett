@@ -6,8 +6,8 @@ const mockContext: MiddlewareContext = {
 };
 
 const errorResult = {
-    error_name: `ENOTJSON`,
-    error_message: `Response data was not an object`
+    name: `ENOTJSON`,
+    message: `Response data was not an object`
 };
 
 describe('JSON validator middleware', () => {

@@ -1,6 +1,22 @@
 import nock from 'nock';
 import { HttpClient } from './../../lib/client';
 
+const expectedRequest = {
+    client: "test",
+    id: expect.any(String),
+    method: "get",
+    type: "upstream",
+    url: "http://testurl.com/x"
+}
+const expectedResponse = {
+    body: "",
+    content_length: undefined,
+    headers: {},
+    melchett_cache: expect.any(String),
+    status: expect.any(Number),
+    upstream_duration: undefined
+}
+
 describe('melchett client', () => {
     describe('GET', () => {
         beforeAll(async () => {
@@ -11,10 +27,10 @@ describe('melchett client', () => {
     
         it('resolves with expected response', async () => {
             const client = new HttpClient({ name: 'test' });
-            const response = await client.get('http://testurl.com/x')
+            const result = await client.get('http://testurl.com/x')
     
-            expect(response.status).toEqual(200);
-            expect(response.body).toMatchObject({ data: 1 });
+            expect(result.response.status).toEqual(200);
+            expect(result.response.body).toMatchObject({ data: 1 });
         });
     });
 
@@ -26,10 +42,10 @@ describe('melchett client', () => {
                     .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' });
     
                 const client = new HttpClient({ name: 'test' });
-                const response = await client.post('http://testurl.com/x', { foo: 'bar' });
+                const result = await client.post('http://testurl.com/x', { foo: 'bar' });
     
-                expect(response.status).toEqual(200);
-                expect(response.body).toMatchObject({ data: 1 });
+                expect(result.response.status).toEqual(200);
+                expect(result.response.body).toMatchObject({ data: 1 });
             });
         });
     
@@ -46,13 +62,22 @@ describe('melchett client', () => {
 
     describe('receives a not found failed http response', () => {
         it('receives a 404 response', async () => {
+            const expectedResponseWithHeaders = {
+                ...expectedResponse,
+                "content_length": "500",
+                headers: {
+                    "content-length": "500",
+                    "x-response-time": "500"
+                }
+            }
+
             nock('http://testurl.com')
                 .get('/x')
                 .reply(404, undefined, { 'x-response-time': '500', 'content-length': '500' })
             const client = new HttpClient({ name: 'test' });
             await expect(client.get('http://testurl.com/x'))
                 .rejects
-                .toMatchObject({ error_name: 'ESTATUS404', error_message: 'Status code 404 received for http://testurl.com/x' });
+                .toMatchObject({ request: expectedRequest, response: expectedResponseWithHeaders, error: { name: 'ESTATUS404', message: 'Status code 404 received for http://testurl.com/x' }});
         });
     });
     
@@ -67,7 +92,7 @@ describe('melchett client', () => {
             const client = new HttpClient({ name: 'test' });
             await expect(client.get('http://testurl.com/x'))
                 .rejects
-                .toMatchObject({ error_name: 'ENOTJSON', error_message: 'Response data was not an object' });
+                .toMatchObject({ request: expectedRequest, response: expectedResponse, error: { name: 'ENOTJSON', message: 'Response data was not an object' }});
         });
     });
     
@@ -82,7 +107,7 @@ describe('melchett client', () => {
             const client = new HttpClient({ name: 'test' });
             await expect(client.get('http://testurl.com/x'))
                 .rejects
-                .toMatchObject({ error_name: 'ENOTJSON', error_message: 'Response data was not an object' });
+                .toMatchObject({ request: expectedRequest, response: expectedResponse, error: { name: 'ENOTJSON', message: 'Response data was not an object' }});
         });
     });
     
@@ -109,7 +134,7 @@ describe('melchett client', () => {
                 .catch(async _ => {
                     await expect(client.get('http://testurl.com/x'))
                         .rejects
-                        .toMatchObject({ error_name: `ECIRCUITBREAKER`, error_message: `Circuit breaker is open for test` });
+                        .toMatchObject({ request: expectedRequest, response: {}, error: { name: `ECIRCUITBREAKER`, message: `Circuit breaker is open for test` }});
                 });
         });
     
@@ -125,7 +150,7 @@ describe('melchett client', () => {
                 setTimeout(async () => {
                     resolve(await expect(client.get('http://testurl.com/x'))
                             .rejects
-                            .toMatchObject({ error_name: `ESTATUS500`, error_message: `Status code 500 received for http://testurl.com/x` }));
+                            .toMatchObject({ request: expectedRequest, response: expectedResponse, error: { name: `ESTATUS500`, message: `Status code 500 received for http://testurl.com/x`, details: "" }}));
                 }, 2000)
             });
         });
@@ -147,7 +172,7 @@ describe('melchett client', () => {
             const client = new HttpClient({ name: 'test' });
             await expect(client.get('http://testurl.com/x'))
                 .rejects
-                .toMatchObject({ error_name: `ETIMEDOUT`, error_message: 'Timeout exceeded' });
+                .toMatchObject({ request: expectedRequest, response: {}, error: { name: `ETIMEDOUT`, message: 'Timeout exceeded' }});
         });
     });
 });

@@ -210,14 +210,15 @@ describe('client', () => {
             const client = new HttpClient(clientConfig);
 
             client._composedMiddleware = jest.fn();
-            client._composedMiddleware.mockReturnValue(Promise.resolve({}));
+            client._composedMiddleware
+                .mockReturnValueOnce(Promise.resolve({}))
+                .mockReturnValueOnce(Promise.reject({}));
 
             // Act
-            request(client, requestConfig);
-
-            client._composedMiddleware.mockReturnValue(Promise.reject({}));
-
-            request(client, requestConfig);
+            try {
+                await request(client, requestConfig);
+                await request(client, requestConfig);
+            } catch (e) {}
 
             // Assert
             expect(mockSettleResponse.settleResponse).toBeCalledTimes(2);

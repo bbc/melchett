@@ -14,7 +14,7 @@ const timer = (timingHeader?: string) => {
     ctx.time.elapsed = getTimingFromHeader(ctx.response) || ctx.time.end - ctx.time.start;
  
     if (ctx.error && ctx.error.code === 'ECONNABORTED') {
-      ctx.error = { error_name: 'ETIMEDOUT', error_message: 'Timeout exceeded' };
+      ctx.error = { name: 'ETIMEDOUT', message: 'Timeout exceeded' };
       return Promise.reject(ctx);
     }
 
