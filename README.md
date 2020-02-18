@@ -38,6 +38,19 @@ If requests begin to fail (status code >= 500) add a circuit breaker to prevent 
 
 Valid configuration options can be found in the [Opossum documentation](https://nodeshift.dev/opossum/#circuitbreaker).
 
+### Requests
+Once the `HttpClient` has been instantiated, the following methods are available to call
+
+<pre>
+<i>client</i>.get(<i>url</i> [, <i>headers</i>]);
+<i>client</i>.post(<i>url</i>, <i>body</i> [, <i>headers</i>]);
+</pre>
+
+#### Parameters
+* `url` - a string representing the full URL (including scheme, and any query or fragment parts)
+* `headers` - an object containing key/value pairs representing the request headers
+* `body` - a string or object representing the payload for POST requests
+
 ### Responses
 The request configuration of a given request is always returned (regardless of whether the response is resolved). The following example shows its structure;
 ```
