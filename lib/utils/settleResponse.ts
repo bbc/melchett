@@ -10,7 +10,7 @@ const settleResponse = (ctx: MiddlewareContext) => {
         body: ctx.response.data,
         headers: ctx.response.headers,
         status: ctx.response.status,
-        duration: (ctx.time && ctx.time.elapsed) ? ctx.time.elapsed : undefined,
+        duration: (ctx.time && ctx.time.elapsed !== undefined) ? ctx.time.elapsed : undefined,
         melchettCached: !!ctx.response.melchettCached
     } : {}
     
