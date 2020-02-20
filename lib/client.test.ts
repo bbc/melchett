@@ -143,7 +143,7 @@ describe('client', () => {
                         request: { 'url': 'https://www.bbc.co.uk/' }
                     }
                     await finalFunc(context);
-                } catch (ex) { }
+                } catch (ex) {}
                 return Promise.resolve()
             });
             mockUuid.mockImplementation(() => 'test-uuid');
