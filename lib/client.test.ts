@@ -1,5 +1,3 @@
-import https from 'https';
-import fs from 'fs';
 import { HttpClient, request } from './client';
 import axios from 'axios';
 import uuidv4 from 'uuid/v4';
@@ -21,7 +19,6 @@ jest.mock('./middleware/validStatus');
 jest.mock('./middleware/validJson');
 jest.mock('./utils/settleResponse');
 
-const mockFs = fs as jest.Mocked<typeof fs>;
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockUuid = uuidv4 as jest.Mocked<typeof uuidv4>;
 const mockCompose = compose as jest.Mocked<typeof compose>;
@@ -39,9 +36,9 @@ describe('client', () => {
                 cache: {
                     store: {
                         isReady: () => true,
-                        get: () => { },
-                        set: () => { },
-                        start: () => { }
+                        get: () => {},
+                        set: () => {},
+                        start: () => {}
                     }
                 }
             };
