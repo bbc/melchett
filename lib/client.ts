@@ -46,7 +46,7 @@ class HttpClient {
   _composedMiddleware;
   _state = {};
 
-  constructor (config: HttpClientConfig) {
+  constructor(config: HttpClientConfig) {
     const defaults = {
       name: 'http',
       userAgent: `melchett/v${version}`,
