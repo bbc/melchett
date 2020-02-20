@@ -20,21 +20,17 @@ describe('Response settler', () => {
 
         // Assert
         await expect(settleResponse(context)).resolves.toMatchObject({
-            request: {
-                ...mockContext.request,
-                type: "upstream"
-            },
+            request: mockContext.request,
             response: {
                 body: {
                     foo: "bar",
                 },
-                content_length: undefined,
                 headers: {
                     "x-test": "baz",
                 },
-                melchett_cache: "MISS",
+                melchettCached: false,
                 status: 200,
-                upstream_duration: undefined
+                duration: undefined
             }
         });
     });
@@ -42,10 +38,7 @@ describe('Response settler', () => {
     it('undefined response should set error and reject', async () => {
         // Arrange
         const expectedResponse = {
-            request: {
-                ...mockContext.request,
-                type: "upstream"
-            },
+            request: mockContext.request,
             response: {},
             error: {
                 name: `EUNKNOWN`,
@@ -69,7 +62,6 @@ describe('Response settler', () => {
 
         const expectedRequest = {
             ...mockContext.request,
-            type: "upstream",
             method: "get"
         }
 

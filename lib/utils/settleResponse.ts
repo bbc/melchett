@@ -2,7 +2,6 @@ const settleResponse = (ctx: MiddlewareContext) => {
     const request = {
         url: ctx.request && ctx.request.url,
         client: ctx.client && ctx.client.name,
-        type: 'upstream',
         method: ctx.request && ctx.request.method,
         id: ctx.request && ctx.request.id
     };
@@ -11,9 +10,8 @@ const settleResponse = (ctx: MiddlewareContext) => {
         body: ctx.response.data,
         headers: ctx.response.headers,
         status: ctx.response.status,
-        content_length: ctx.response.headers['content-length'],
-        upstream_duration: (ctx.time && ctx.time.elapsed) ? ctx.time.elapsed : undefined,
-        melchett_cache: ctx.response.headers['x-melchett-cache'] || 'MISS'
+        duration: (ctx.time && ctx.time.elapsed) ? ctx.time.elapsed : undefined,
+        melchettCached: !!ctx.response.melchettCached
     } : {}
     
     if (!ctx.error && ctx.response) {

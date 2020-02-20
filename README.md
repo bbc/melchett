@@ -10,9 +10,9 @@ The REST client, constructed using `new HttpClient(config)`. See below for the s
 
 Property | Type | Description | Default
 ---|---|---|---
-`name` | `string` | Name to be used for logging | `http`
+`name` | `string` | Name of the client | `http`
 `timeout` | `number` | Timeout in milliseconds | `1500`
-`userAgent` | `string` | Custom user agent for the client | `melchett/VERSION`
+`userAgent` | `string` | Custom user agent for the client | `melchett/{VERSION}`
 `successPredicate` | `(status: number) => boolean` | Function to determine if a response is resolved or rejected | `(status) => status >= 200 && status < 400`
 `cache` | [`Cache`](#caching) | Object specifying caching options and a reference to a caching engine. If `undefined`, caching is disabled. See [caching](#caching) for more information | `undefined`
 `circuitBreaker` | [`CircuitBreaker`](#circuit-breaker) | Object specifying circuit breaker options. If `undefined`, circuit breaker is disabled. See [circuit breaker](#circuit-breaker) for more information | `undefined`
@@ -30,7 +30,7 @@ Property | Type | Description | Default
 ---|---|---|---
 `store` | [Catbox](https://github.com/hapijs/catbox#readme) instance | Cache engine to be used | `undefined`
 `cacheTtl` | `number` | Maximum number of seconds to store responses in cache (`max-age` is preferred if its value is lower) | `7200`
-`ignoreErrors` | `boolean` | Reject the response if a cache error occurs | `true`
+`ignoreErrors` | `boolean` | Do not reject the response if a cache error occurs | `true`
 `doNotVary` | `string[]` | Array of header names that should _not_ be varied on |  `[]`
 
 #### Circuit breaker
@@ -58,7 +58,6 @@ The request configuration of a given request is always returned (regardless of w
     request: {
         url: 'https://www.bbc.co.uk',
         client: 'http',
-        type: 'upstream',
         method: 'get',
         id: '89dce102-2040-40b9-80ae-0a72c5aaa3db'
     }
@@ -72,16 +71,15 @@ If the response completes successfully, the promise is resolved and the `respons
         body: 'Here is a response that will inform, educate, and entertain',
         headers: {},
         status: 200,
-        content_length: '7074',
-        upstream_duration: 123,
-        melchett_cache: 'MISS'
+        duration: 123,
+        melchettCached: true
     }
 }
 ```
 
-Response that are not served from cache and contain a header matching the value provided in `timingHeader` have the header value added under the `upstream_duration` property.
+Response that are not served from cache and contain a header matching the value provided in `timingHeader` have the header value added under the `duration` property.
 
-If no `timingHeader` is provided or it was absent in the response, `melchett` will fall back to a less accurate timing calculation for the `upstream_duration` property.
+If no `timingHeader` is provided or it was absent in the response, `melchett` will fall back to a less accurate timing calculation for the `duration` property.
 
 If an error occurs at some point in the request/response chain, the promise is rejected with an additional `error` field as shown:
 ```

@@ -5,16 +5,14 @@ const expectedRequest = {
     client: "test",
     id: expect.any(String),
     method: "get",
-    type: "upstream",
     url: "http://testurl.com/x"
 }
 const expectedResponse = {
     body: "",
-    content_length: undefined,
     headers: {},
-    melchett_cache: expect.any(String),
+    melchettCached: expect.any(Boolean),
     status: expect.any(Number),
-    upstream_duration: expect.any(Number)
+    duration: expect.any(Number)
 }
 
 describe('melchett client', () => {
@@ -64,7 +62,6 @@ describe('melchett client', () => {
         it('receives a 404 response', async () => {
             const expectedResponseWithHeaders = {
                 ...expectedResponse,
-                "content_length": "500",
                 headers: {
                     "content-length": "500",
                     "x-response-time": "500"
