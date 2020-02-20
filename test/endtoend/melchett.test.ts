@@ -14,7 +14,7 @@ const expectedResponse = {
     headers: {},
     melchett_cache: expect.any(String),
     status: expect.any(Number),
-    upstream_duration: undefined
+    upstream_duration: expect.any(Number)
 }
 
 describe('melchett client', () => {
