@@ -1,3 +1,5 @@
+import https from 'https';
+import fs from 'fs';
 import { HttpClient, request } from './client';
 import axios from 'axios';
 import uuidv4 from 'uuid/v4';
@@ -9,6 +11,7 @@ import * as settleResponse from './utils/settleResponse';
 
 const version = require('./../package.json').version;
 
+jest.mock('fs');
 jest.mock('axios');
 jest.mock('uuid/v4');
 jest.mock('koa-compose');
@@ -18,6 +21,7 @@ jest.mock('./middleware/validStatus');
 jest.mock('./middleware/validJson');
 jest.mock('./utils/settleResponse');
 
+const mockFs = fs as jest.Mocked<typeof fs>;
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockUuid = uuidv4 as jest.Mocked<typeof uuidv4>;
 const mockCompose = compose as jest.Mocked<typeof compose>;
@@ -35,9 +39,9 @@ describe('client', () => {
                 cache: {
                     store: {
                         isReady: () => true,
-                        get: () => {},
-                        set: () => {},
-                        start: () => {}
+                        get: () => { },
+                        set: () => { },
+                        start: () => { }
                     }
                 }
             };
@@ -105,6 +109,33 @@ describe('client', () => {
             // Assert
             expect(mockAxios.create).toBeCalledTimes(1);
         });
+
+        it('should setup axios with an https agent if specified', async () => {
+            // Arrange
+            const config = {
+                agentOptions: {
+                    cert: 'my-cert',
+                    key: 'my-private-key',
+                    ca: 'my-ca-bundle'
+                }
+            };
+
+            // Act
+            new HttpClient(config);
+
+            // Assert
+            const expected = expect.objectContaining({
+                httpsAgent: expect.objectContaining({
+                    options: expect.objectContaining({
+                        ca: 'my-ca-bundle',
+                        cert: 'my-cert',
+                        key: 'my-private-key'
+                    })
+                })
+            });
+            expect(mockAxios.create).toHaveBeenCalledTimes(1);
+            expect(mockAxios.create).toHaveBeenCalledWith(expected);
+        });
     });
 
     describe('request', () => {
@@ -115,7 +146,7 @@ describe('client', () => {
                         request: { 'url': 'https://www.bbc.co.uk/' }
                     }
                     await finalFunc(context);
-                } catch (ex) {}
+                } catch (ex) { }
                 return Promise.resolve()
             });
             mockUuid.mockImplementation(() => 'test-uuid');

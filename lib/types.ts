@@ -69,5 +69,10 @@ interface HttpClientConfig {
   successPredicate?: (status: number) => boolean,
   userAgent?: string,
   logger?: Logger,
-  timingHeader?: string
+  timingHeader?: string,
+  agentOptions?: {
+    cert?: string | Buffer | Array<string | Buffer>,
+    ca?: string | Buffer | Array<string | Buffer>,
+    key?: string | Buffer | Array<Buffer | Object>
+  }
 }
