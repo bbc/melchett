@@ -196,7 +196,7 @@ describe('client', () => {
             expect(client._composedMiddleware).toBeCalledWith(expectedContext, expect.any(Function));
         });
 
-        it('should call settleResponse', async () => {
+        it('settleResponse should handle composedMiddleware promise', async () => {
             // Arrange
             const clientConfig: HttpClientConfig = {
                 name: 'test'
@@ -207,11 +207,21 @@ describe('client', () => {
                 url: 'https://www.bbc.co.uk'
             };
 
+            const client = new HttpClient(clientConfig);
+
+            client._composedMiddleware = jest.fn();
+            client._composedMiddleware
+                .mockReturnValueOnce(Promise.resolve({}))
+                .mockReturnValueOnce(Promise.reject({}));
+
             // Act
-            request(new HttpClient(clientConfig), requestConfig);
+            try {
+                await request(client, requestConfig);
+                await request(client, requestConfig);
+            } catch (e) {}
 
             // Assert
-            expect(mockSettleResponse.settleResponse).toBeCalled();
+            expect(mockSettleResponse.settleResponse).toBeCalledTimes(2);
         });
     });
 });
