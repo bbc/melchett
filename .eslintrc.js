@@ -5,6 +5,7 @@ module.exports = {
         jest: true
     },
     extends: [
+        'standard',
         'plugin:@typescript-eslint/recommended',
         'plugin:@typescript-eslint/eslint-recommended'
     ],
@@ -16,7 +17,10 @@ module.exports = {
       }
     },
     rules: {
-      '@typescript-eslint/indent': [2, 4],
+      semi: ["error","always"],
+      indent: ["error", 4],
+      'no-new': ['off'],
+      'prefer-promise-reject-errors': ['off'],
       '@typescript-eslint/explicit-function-return-type': 'off',
     }
   };
