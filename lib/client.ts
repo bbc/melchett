@@ -64,9 +64,9 @@ class HttpClient {
         }) : undefined;
 
         /**
-         * Initialise middleware in correct order
-         *    Cache -> Valid JSON -> Valid Status -> Timer -> Circuit Breaker
-         *  */
+     * Initialise middleware in correct order
+     *    Cache -> Valid JSON -> Valid Status -> Timer -> Circuit Breaker
+     *  */
         if (this._config.cache && this._config.cache.store) {
             this._middleware.push(caching(this._config.cache));
         }
