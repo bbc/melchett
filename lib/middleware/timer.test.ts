@@ -76,7 +76,7 @@ describe('Timer middleware', () => {
 
         const errorResult = {
             name: 'ETIMEDOUT',
-            message: 'Timeout exceeded',
+            message: 'Timeout exceeded'
         };
 
         // Assert

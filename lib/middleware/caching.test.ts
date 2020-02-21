@@ -108,11 +108,11 @@ describe('Caching middleware', () => {
         let spyParseCacheControl;
 
         beforeEach(() => {
-            spyParseCacheControl = jest.spyOn(wreck, 'parseCacheControl')
+            spyParseCacheControl = jest.spyOn(wreck, 'parseCacheControl');
         });
 
         afterEach(() => {
-            spyParseCacheControl.mockRestore()
+            spyParseCacheControl.mockRestore();
         });
 
         it('no headers should return undefined', async () => {
@@ -156,7 +156,7 @@ describe('Caching middleware', () => {
             // Arrange
             const mockGet = jest.fn().mockResolvedValue({ item: '{ "foo": "bar" }' });
 
-            const store = { ...mockCacheStore, get: mockGet }
+            const store = { ...mockCacheStore, get: mockGet };
 
             const cache = { store, doNotVary: [], cacheTtl: 200, ignoreErrors: true };
             const context: MiddlewareContext = {
@@ -177,7 +177,7 @@ describe('Caching middleware', () => {
             // Arrange
             const mockSet = jest.fn();
 
-            const store = { ...mockCacheStore, set: mockSet }
+            const store = { ...mockCacheStore, set: mockSet };
 
             const cache = { store, ...mockCacheConfig };
             const context: MiddlewareContext = {
@@ -197,7 +197,7 @@ describe('Caching middleware', () => {
             // Arrange
             const mockSet = jest.fn();
 
-            const store = { ...mockCacheStore, set: mockSet }
+            const store = { ...mockCacheStore, set: mockSet };
 
             const cache = { store, ...mockCacheConfig };
             const context: MiddlewareContext = {

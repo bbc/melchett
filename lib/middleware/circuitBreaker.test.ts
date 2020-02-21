@@ -4,13 +4,13 @@ const defaultContext: MiddlewareContext = {
     client: { name: 'client-name', userAgent: 'melchett/test', state: {} },
     request: { method: 'get', url: 'foo' },
     response: { status: undefined }
-}
+};
 
 const mockOpossum = { opened: false, fire: () => Promise.resolve() };
 jest.mock('opossum', () => {
-    return function() {
-        return mockOpossum
-    }
+    return function () {
+        return mockOpossum;
+    };
 });
 
 describe('Circuit breaker', () => {
@@ -27,8 +27,8 @@ describe('Circuit breaker', () => {
             const next = jest.fn();
 
             const expected = {
-                message: "Circuit breaker is open for client-name",
-                name: "ECIRCUITBREAKER"
+                message: 'Circuit breaker is open for client-name',
+                name: 'ECIRCUITBREAKER'
             };
 
             await expect(handler(context, next)).rejects.toMatchObject({ error: expected });

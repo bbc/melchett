@@ -7,7 +7,7 @@ const getCacheControl = (response) => {
         return;
     }
     return parseCacheControl(headerValues);
-}
+};
 
 const isCacheable = (response) => {
     const cacheControl = getCacheControl(response);
@@ -19,24 +19,24 @@ const isCacheable = (response) => {
         return isGetRequest && !hasNoCache && hasMaxAge;
     }
     return false;
-}
+};
 
 const getCacheKeyObject = (ctx: MiddlewareContext, config: CacheConfig) => {
     return {
         segment: `${ctx.client.userAgent}:${ctx.client.name}`,
         id: getRequestHash(ctx.request, config.doNotVary)
-    }
-}
+    };
+};
 
 const getCacheTtl = (response, config: CacheConfig) => {
     const cacheControl = getCacheControl(response);
 
     if (cacheControl) {
-        return Math.min(cacheControl['max-age'], config.cacheTtl)
+        return Math.min(cacheControl['max-age'], config.cacheTtl);
     }
 
     return config.cacheTtl;
-}
+};
 
 const getFromCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
     const cacheKeyObject = getCacheKeyObject(ctx, cache);
@@ -44,10 +44,10 @@ const getFromCache = (cache: CacheCombined, ctx: MiddlewareContext) => {
     return cache.store.get(cacheKeyObject)
         .then((cacheObject) => {
             if (cacheObject && cacheObject.item) {
-                return JSON.parse(cacheObject.item)
+                return JSON.parse(cacheObject.item);
             }
         });
-}
+};
 
 const storeInCache = async (cache: CacheCombined, ctx: MiddlewareContext) => {
     if (isCacheable(ctx.response)) {
@@ -63,7 +63,7 @@ const storeInCache = async (cache: CacheCombined, ctx: MiddlewareContext) => {
 
         await cache.store.set(cacheKeyObject, JSON.stringify(prunedResponse), getCacheTtl(ctx.response, cache) * 1000);
     }
-}
+};
 
 const caching = (cache: CacheCombined) => {
     const defaults = {
@@ -120,8 +120,8 @@ const caching = (cache: CacheCombined) => {
         }
 
         return ctx;
-    }
-}
+    };
+};
 
 export {
     isCacheable,

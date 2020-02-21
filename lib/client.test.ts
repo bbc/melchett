@@ -139,11 +139,11 @@ describe('client', () => {
             mockCompose.mockImplementation(() => async (context, finalFunc) => {
                 try {
                     context = {
-                        request: { 'url': 'https://www.bbc.co.uk/' }
-                    }
+                        request: { url: 'https://www.bbc.co.uk/' }
+                    };
                     await finalFunc(context);
                 } catch (ex) {}
-                return Promise.resolve()
+                return Promise.resolve();
             });
             mockUuid.mockImplementation(() => 'test-uuid');
         });
@@ -214,7 +214,7 @@ describe('client', () => {
                     method: 'get',
                     url: 'https://www.bbc.co.uk'
                 }
-            }
+            };
 
             // Act
             request(client, requestConfig);

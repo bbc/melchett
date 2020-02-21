@@ -79,11 +79,11 @@ describe('getRequestHash', () => {
                 Authorization: 'token-1',
                 'X-Request-Id': '5678'
             }
-        }
+        };
 
         // Act
-        const firstHash = getRequestHash(firstRequest, [ 'x-request-id' ]);
-        const secondHash = getRequestHash(secondRequest, [ 'x-request-id' ]);
+        const firstHash = getRequestHash(firstRequest, ['x-request-id']);
+        const secondHash = getRequestHash(secondRequest, ['x-request-id']);
 
         // Assert
         expect(firstHash).toEqual(secondHash);

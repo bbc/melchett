@@ -2,7 +2,7 @@ import { validStatus } from './validStatus';
 
 const mockContext: MiddlewareContext = {
     client: { name: 'test', userAgent: 'melchett/test' },
-    request: { url: 'https://www.bbc.co.uk', method: 'get' },
+    request: { url: 'https://www.bbc.co.uk', method: 'get' }
 };
 
 const errorResult = (status: number) => {
@@ -10,7 +10,7 @@ const errorResult = (status: number) => {
         name: `ESTATUS${status}`,
         message: `Status code ${status} received for https://www.bbc.co.uk`,
         details: ''
-    }
+    };
 };
 
 const defaultPredicate = (status: number) => status >= 200 && status < 400;
@@ -26,18 +26,18 @@ describe('Status validator middleware', () => {
         it('should call next function once', async () => {
             // Arrange
             const next = jest.fn();
-    
+
             // Act
             await appliedValidStatus(mockContext, next);
-    
+
             // Assert
             expect(next).toBeCalledTimes(1);
         });
-    
+
         it('should reject with ESTATUS404 for 404 response', async () => {
             // Arrange
             const next = jest.fn();
-    
+
             const context = { ...mockContext, response: { status: 404 } };
 
             // Assert
@@ -45,13 +45,13 @@ describe('Status validator middleware', () => {
                 error: errorResult(404)
             });
         });
-    
+
         it('should resolve with original context for valid response status', async () => {
             // Arrange
             const next = jest.fn();
-    
+
             const context = { ...mockContext, response: { status: 200 } };
-    
+
             // Assert
             await expect(appliedValidStatus(context, next)).resolves.toMatchObject(context);
         });

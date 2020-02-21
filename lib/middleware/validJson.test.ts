@@ -2,12 +2,12 @@ import { validJson } from './validJson';
 
 const mockContext: MiddlewareContext = {
     client: { name: 'test', userAgent: 'melchett/test' },
-    request: { url: 'https://www.bbc.co.uk', method: 'get' },
+    request: { url: 'https://www.bbc.co.uk', method: 'get' }
 };
 
 const errorResult = {
-    name: `ENOTJSON`,
-    message: `Response data was not an object`
+    name: 'ENOTJSON',
+    message: 'Response data was not an object'
 };
 
 describe('JSON validator middleware', () => {
@@ -38,7 +38,7 @@ describe('JSON validator middleware', () => {
         // Arrange
         const next = jest.fn();
 
-        const context = { ...mockContext, response: { data: "failstring" } };
+        const context = { ...mockContext, response: { data: 'failstring' } };
 
         // Assert
         await expect(validJson(context, next)).rejects.toMatchObject({

@@ -14,22 +14,22 @@ const settleResponse = (ctx: MiddlewareContext) => {
         status: ctx.response.status,
         duration: (ctx.time && ctx.time.elapsed !== undefined) ? ctx.time.elapsed : undefined,
         melchettCached: !!ctx.response.melchettCached
-    } : {}
-    
+    } : {};
+
     if (!ctx.error && ctx.response) {
         return Promise.resolve({ request, response });
     }
 
     if (!ctx.error) {
         ctx.error = {
-            name: `EUNKNOWN`,
+            name: 'EUNKNOWN',
             message: 'An unknown error occurred'
-        }
+        };
     }
 
     return Promise.reject({ request, response, error: ctx.error });
-}
+};
 
 export {
     settleResponse
-}
+};

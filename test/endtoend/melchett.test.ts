@@ -5,14 +5,14 @@ const expectedRequest = {
     client: 'test',
     id: expect.any(String),
     method: 'get',
-    url: 'http://testurl.com/x',
+    url: 'http://testurl.com/x'
 };
 const expectedResponse = {
     body: '',
     headers: {},
     melchettCached: expect.any(Boolean),
     status: expect.any(Number),
-    duration: expect.any(Number),
+    duration: expect.any(Number)
 };
 
 describe('melchett client', () => {
@@ -35,24 +35,22 @@ describe('melchett client', () => {
         describe('client', () => {
             it('sets expected request headers', async () => {
                 const client = new HttpClient({ name: 'test' });
-                const result = await client.get('http://testurl.com/x', { foo: 'bar'});
+                const result = await client.get('http://testurl.com/x', { foo: 'bar' });
 
-                expect(result.request.headers).toEqual(expect.objectContaining({ foo: 'bar'}));
+                expect(result.request.headers).toEqual(expect.objectContaining({ foo: 'bar' }));
             });
         });
     });
 
     describe('POST', () => {
-        beforeAll(()=>{
-            {
-                nock('http://testurl.com')
-                    .persist()
-                    .post('/x')
-                    .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' });
-            }
-        })
+        beforeAll(() => {
+            nock('http://testurl.com')
+                .persist()
+                .post('/x')
+                .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' });
+        });
 
-        afterAll(()=>nock.cleanAll())
+        afterAll(() => nock.cleanAll());
 
         describe('request', () => {
             it('resolves with expected response', async () => {
@@ -67,16 +65,16 @@ describe('melchett client', () => {
         describe('client', () => {
             it('sets expected request headers', async () => {
                 const client = new HttpClient({ name: 'test' });
-                const result = await client.post('http://testurl.com/x',{}, { foo: 'bar'});
+                const result = await client.post('http://testurl.com/x', {}, { foo: 'bar' });
 
-                expect(result.request.headers).toEqual(expect.objectContaining({ foo: 'bar'}));
+                expect(result.request.headers).toEqual(expect.objectContaining({ foo: 'bar' }));
             });
 
             it('sends with expected body', async () => {
                 const client = new HttpClient({ name: 'test' });
-                const result = await client.post('http://testurl.com/x',{ param: 'foo'});
+                const result = await client.post('http://testurl.com/x', { param: 'foo' });
 
-                expect(result.request.body).toEqual(expect.objectContaining({param: 'foo'}));
+                expect(result.request.body).toEqual(expect.objectContaining({ param: 'foo' }));
             });
         });
     });
@@ -87,8 +85,8 @@ describe('melchett client', () => {
                 ...expectedResponse,
                 headers: {
                     'content-length': '500',
-                    'x-response-time': '500',
-                },
+                    'x-response-time': '500'
+                }
             };
 
             nock('http://testurl.com')
@@ -136,8 +134,8 @@ describe('melchett client', () => {
             name: 'test',
             circuitBreaker: {
                 errorThresholdPercentage: 0,
-                resetTimeout: 1000,
-            },
+                resetTimeout: 1000
+            }
         };
 
         beforeAll(async () => {
@@ -166,9 +164,9 @@ describe('melchett client', () => {
                 await client.get('http://testurl.com/x');
             } catch (ex) { }
 
-            return await new Promise((resolve) => {
+            return new Promise((resolve) => {
                 setTimeout(async () => {
-                    resolve(await expect(client.get('http://testurl.com/x'))
+                    resolve(expect(client.get('http://testurl.com/x'))
                         .rejects
                         .toMatchObject({ request: expectedRequest, response: expectedResponse, error: { name: 'ESTATUS500', message: 'Status code 500 received for http://testurl.com/x', details: '' } }));
                 }, 2000);
