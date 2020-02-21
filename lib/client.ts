@@ -58,10 +58,10 @@ class HttpClient {
     this._config = { ...defaults, ...config };
     this._middleware = [];
     const httpsAgent = this._config.agentOptions ? new https.Agent({
-        ca: this._config.agentOptions.ca,
-        cert: this._config.agentOptions.cert,
-        key: this._config.agentOptions.key
-      }) : undefined;
+      ca: this._config.agentOptions.ca,
+      cert: this._config.agentOptions.cert,
+      key: this._config.agentOptions.key
+    }) : undefined;
 
     /**
      * Initialise middleware in correct order
@@ -80,14 +80,6 @@ class HttpClient {
     }
 
     this._composedMiddleware = compose(this._middleware)
-
-    if (this._config.agentOptions) {
-      httpsAgent = new https.Agent({
-        ca: this._config.agentOptions.ca,
-        cert: this._config.agentOptions.cert,
-        key: this._config.agentOptions.key
-      });
-    }
 
     this._agent = axios.create({
       timeout: this._config.timeout,
