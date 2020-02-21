@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 
-const getRequestHash = (request: { url: string, headers?: { [key: string]: string } }, doNotVary: string[] = []) => {
+const getRequestHash = (request: { url: string; headers?: { [key: string]: string } }, doNotVary: string[] = []) => {
     const shasum = createHash('sha1');
     shasum.update(request.url);
 
