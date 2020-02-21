@@ -9,6 +9,7 @@ import * as settleResponse from './utils/settleResponse';
 
 const version = require('./../package.json').version;
 
+jest.mock('fs');
 jest.mock('axios');
 jest.mock('uuid/v4');
 jest.mock('koa-compose');
@@ -104,6 +105,33 @@ describe('client', () => {
 
             // Assert
             expect(mockAxios.create).toBeCalledTimes(1);
+        });
+
+        it('should setup axios with an https agent if specified', async () => {
+            // Arrange
+            const config = {
+                agentOptions: {
+                    cert: 'my-cert',
+                    key: 'my-private-key',
+                    ca: 'my-ca-bundle'
+                }
+            };
+
+            // Act
+            new HttpClient(config);
+
+            // Assert
+            const expected = expect.objectContaining({
+                httpsAgent: expect.objectContaining({
+                    options: expect.objectContaining({
+                        ca: 'my-ca-bundle',
+                        cert: 'my-cert',
+                        key: 'my-private-key'
+                    })
+                })
+            });
+            expect(mockAxios.create).toHaveBeenCalledTimes(1);
+            expect(mockAxios.create).toHaveBeenCalledWith(expected);
         });
     });
 

@@ -17,6 +17,7 @@ Property | Type | Description | Default
 `cache` | [`Cache`](#caching) | Object specifying caching options and a reference to a caching engine. If `undefined`, caching is disabled. See [caching](#caching) for more information | `undefined`
 `circuitBreaker` | [`CircuitBreaker`](#circuit-breaker) | Object specifying circuit breaker options. If `undefined`, circuit breaker is disabled. See [circuit breaker](#circuit-breaker) for more information | `undefined`
 `timingHeader` | `string` | Response header from which to try to parse the response time | `undefined`
+`agentOptions` | `object` | Object containing options that will be used to create a [custom https agent](https://nodejs.org/api/https.html). Currently only `ca`, `cert` and `key` are supported | `undefined`
 
 ### Middleware
 Additional client features are implemented as middleware. These can be opted-into by adding the relevent property for the feature to the [client configuration object](#configuration).

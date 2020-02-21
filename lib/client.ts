@@ -1,3 +1,4 @@
+import https from 'https';
 import axios, { AxiosInstance } from 'axios';
 import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
@@ -56,6 +57,11 @@ class HttpClient {
 
     this._config = { ...defaults, ...config };
     this._middleware = [];
+    const httpsAgent = this._config.agentOptions ? new https.Agent({
+      ca: this._config.agentOptions.ca,
+      cert: this._config.agentOptions.cert,
+      key: this._config.agentOptions.key
+    }) : undefined;
 
     /**
      * Initialise middleware in correct order
@@ -80,7 +86,8 @@ class HttpClient {
       headers: {
         'User-Agent': this._config.userAgent,
       },
-      validateStatus: () => true
+      validateStatus: () => true,
+      httpsAgent: httpsAgent
     });
   }
 
