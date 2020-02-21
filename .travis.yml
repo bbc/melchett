@@ -4,6 +4,6 @@ node_js:
 cache:
   yarn: true
 install:
-- yarn
+- npm ci
 script:
 - npm test
