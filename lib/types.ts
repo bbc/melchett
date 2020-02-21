@@ -28,7 +28,9 @@ interface RequestConfig {
   url: string,
   headers?: any,
   data?: any,
-  id?: string
+  id?: string,
+  cancel?: (arg0: string | object) => void,
+  cancelToken?: any
 }
 
 type MiddlewareContext = {

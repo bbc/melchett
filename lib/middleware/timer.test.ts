@@ -2,7 +2,7 @@ import { timer } from './timer';
 
 const mockContext: MiddlewareContext = {
   client: { name: 'test', userAgent: 'melchett/test' },
-  request: { url: 'https://www.bbc.co.uk', method: 'get' }
+  request: { url: 'https://www.bbc.co.uk', method: 'get', cancel: jest.fn() }
 };
 
 describe('Timer middleware', () => {
@@ -12,7 +12,7 @@ describe('Timer middleware', () => {
 
     // Act
     try {
-      await timer()({ ...mockContext }, next);
+      await timer(1500)({ ...mockContext }, next);
     } catch (ex) {}
 
     // Assert
@@ -26,7 +26,7 @@ describe('Timer middleware', () => {
 
     // Act
     try {
-      await timer()(context, next);
+      await timer(1500)(context, next);
     } catch (ex) {}
 
     // Assert
@@ -41,7 +41,7 @@ describe('Timer middleware', () => {
 
     // Act
     try {
-      await timer()(context, next);
+      await timer(1500)(context, next);
     } catch (ex) {}
 
     // Assert
@@ -63,7 +63,7 @@ describe('Timer middleware', () => {
 
     // Act
     try {
-      await timer('x-response-time')(context, next);
+      await timer(1500, 'x-response-time')(context, next);
     } catch (ex) {}
 
     // Assert
@@ -76,11 +76,11 @@ describe('Timer middleware', () => {
 
     const errorResult = {
       name: 'ETIMEDOUT',
-      message: 'Timeout exceeded',
+      message: 'Timeout of 1ms exceeded',
     };
 
     // Assert
-    await expect(timer()({ ...mockContext, error: { code: 'ECONNABORTED' } }, next)).rejects.toMatchObject({
+    await expect(timer(1)({ ...mockContext, error: { message: 'ETIMEDOUT' } }, next)).rejects.toMatchObject({
       error: errorResult
     });
   });
