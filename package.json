@@ -22,14 +22,14 @@
     "type": "git",
     "url": "git+https://github.com/bbc/melchett.git"
   },
-  "bugs": {
-    "url": "https://github.com/bbc/melchett/issues"
-  },
   "files": [
     "dist/**/*"
   ],
   "author": "BBC",
   "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/bbc/melchett/issues"
+  },
   "homepage": "https://github.com/bbc/melchett#readme",
   "dependencies": {
     "@hapi/wreck": "^16.0.1",
