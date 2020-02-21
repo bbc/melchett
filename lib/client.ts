@@ -103,5 +103,4 @@ class HttpClient {
 export {
     HttpClient,
     request
-}
-;
+};
