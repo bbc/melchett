@@ -12,7 +12,7 @@
     "test:endtoend": "npx jest test/endtoend",
     "prepare": "npm run build",
     "preversion": "npm test",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push origin master --tags"
   },
   "repository": {
     "type": "git",
