@@ -57,7 +57,11 @@ class HttpClient {
 
     this._config = { ...defaults, ...config };
     this._middleware = [];
-    let httpsAgent = null;
+    const httpsAgent = this._config.agentOptions ? new https.Agent({
+        ca: this._config.agentOptions.ca,
+        cert: this._config.agentOptions.cert,
+        key: this._config.agentOptions.key
+      }) : undefined;
 
     /**
      * Initialise middleware in correct order
