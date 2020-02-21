@@ -1,8 +1,7 @@
 language: node_js
 node_js:
 - 10
-cache:
-  yarn: true
+- 12
 install:
 - npm ci
 script:
