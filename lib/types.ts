@@ -31,14 +31,6 @@ interface RequestConfig {
   id?: string
 }
 
-interface Logger {
-  debug: (message?: any, ...args: any[]) => void,
-  error: (message?: any, ...args: any[]) => void,
-  info: (message?: any, ...args: any[]) => void,
-  log: (message?: any, ...args: any[]) => void,
-  warn: (message?: any, ...args: any[]) => void
-}
-
 type MiddlewareContext = {
   client: {
     name: string,
@@ -68,7 +60,6 @@ interface HttpClientConfig {
   circuitBreaker?: CircuitBreakerConfig,
   successPredicate?: (status: number) => boolean,
   userAgent?: string,
-  logger?: Logger,
   timingHeader?: string,
   agentOptions?: {
     cert?: string | Buffer | Array<string | Buffer>,

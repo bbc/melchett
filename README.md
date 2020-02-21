@@ -10,11 +10,10 @@ The REST client, constructed using `new HttpClient(config)`. See below for the s
 
 Property | Type | Description | Default
 ---|---|---|---
-`name` | `string` | Name to be used for logging | `http`
+`name` | `string` | Name of the client | `http`
 `timeout` | `number` | Timeout in milliseconds | `1500`
-`userAgent` | `string` | Custom user agent for the client | `melchett/VERSION`
+`userAgent` | `string` | Custom user agent for the client | `melchett/{VERSION}`
 `successPredicate` | `(status: number) => boolean` | Function to determine if a response is resolved or rejected | `(status) => status >= 200 && status < 400`
-`logger` | [`Logger`](#logging) | Object implementing the common logging interface (e.g. `console` or [winston](https://github.com/winstonjs/winston#readme)). If `undefined`, logging is disabled | `undefined`
 `cache` | [`Cache`](#caching) | Object specifying caching options and a reference to a caching engine. If `undefined`, caching is disabled. See [caching](#caching) for more information | `undefined`
 `circuitBreaker` | [`CircuitBreaker`](#circuit-breaker) | Object specifying circuit breaker options. If `undefined`, circuit breaker is disabled. See [circuit breaker](#circuit-breaker) for more information | `undefined`
 `timingHeader` | `string` | Response header from which to try to parse the response time | `undefined`
@@ -32,7 +31,7 @@ Property | Type | Description | Default
 ---|---|---|---
 `store` | [Catbox](https://github.com/hapijs/catbox#readme) instance | Cache engine to be used | `undefined`
 `cacheTtl` | `number` | Maximum number of seconds to store responses in cache (`max-age` is preferred if its value is lower) | `7200`
-`ignoreErrors` | `boolean` | Reject the response if a cache error occurs | `true`
+`ignoreErrors` | `boolean` | Do not reject the response if a cache error occurs | `true`
 `doNotVary` | `string[]` | Array of header names that should _not_ be varied on |  `[]`
 
 #### Circuit breaker
@@ -40,50 +39,61 @@ If requests begin to fail (status code >= 500) add a circuit breaker to prevent 
 
 Valid configuration options can be found in the [Opossum documentation](https://nodeshift.dev/opossum/#circuitbreaker).
 
-### Logging
-To enable, set the `logger` property in the client configuration object to an object that has the following functions:
-* `debug`
-* `error`
-* `info`
-* `log`
-* `warn`
-Each function should have the signature: `(message?: any, ...args: any[]) => void`. (e.g. `console` or [winston](https://github.com/winstonjs/winston#readme))
+### Requests
+Once the `HttpClient` has been instantiated, the following methods are available to call
 
-If enabled, the request configuration of a given request is always logged (regardless of whether the response is resolved). This log has the following structure;
+<pre>
+<i>client</i>.get(<i>url</i> [, <i>headers</i>]);
+<i>client</i>.post(<i>url</i>, <i>body</i> [, <i>headers</i>]);
+</pre>
+
+#### Parameters
+* `url` - a string representing the full URL (including scheme, and any query or fragment parts)
+* `headers` - an object containing key/value pairs representing the request headers
+* `body` - a string or object representing the payload for POST requests
+
+### Responses
+The request configuration of a given request is always returned (regardless of whether the response is resolved). The following example shows its structure;
 ```
 {
-    url: 'https://www.bbc.co.uk',
-    client: 'http',
-    type: 'upstream',
-    request_id: '89dce102-2040-40b9-80ae-0a72c5aaa3db'
+    request: {
+        url: 'https://www.bbc.co.uk',
+        client: 'http',
+        method: 'get',
+        id: '89dce102-2040-40b9-80ae-0a72c5aaa3db'
+    }
 }
 ```
 
-If the response completes successfully, the following additional structure is added to the log object:
+If the response completes successfully, the promise is resolved and the `response` property will contain the fields shown below:
 ```
 {
-    status_code: 200,
-    content_length: '7074',
-    melchett_cache: 'MISS'
+    response: {
+        body: 'Here is a response that will inform, educate, and entertain',
+        headers: {},
+        status: 200,
+        duration: 123,
+        melchettCached: true
+    }
 }
 ```
 
-Additionally, if the response was not served from cache and there is an header matching the value provided in `timingHeader`, its value is added as:
-```
-{
-    upstream_duration: 24.82
-}
-```
-If no `timingHeader` is provided or it was absent in the response, `melchett` will fall back to a less accurate timing calculation.
+Response that are not served from cache and contain a header matching the value provided in `timingHeader` have the header value added under the `duration` property.
 
-Alternatively, if an error occurs at some point in the request/response chain it is added to the log object. Error objects typically have the following structure:
+If no `timingHeader` is provided or it was absent in the response, `melchett` will fall back to a less accurate timing calculation for the `duration` property.
+
+If an error occurs at some point in the request/response chain, the promise is rejected with an additional `error` field as shown:
 ```
 {
-    error_name: 'ESTATUS500',
-    error_message: 'Status code 500 received',
-    error_details: 'Internal Server Error'
+    error: {
+        name: 'ESTATUS500',
+        message: 'Status code 500 received',
+        details: 'Internal Server Error'
+    }
 }
 ```
+
+Rejections will still include properties under the `response` field if they are available.
 
 ## Contributing
 To develop `melchett` as a dependency for another package, when inside the `melchett` directory run:

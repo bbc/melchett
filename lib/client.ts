@@ -35,8 +35,8 @@ const request = (client: HttpClient, config: RequestConfig) => {
   }
 
   return client._composedMiddleware(context, doRequest)
-    .then(settleResponse(client._config.logger))
-    .catch(settleResponse(client._config.logger));
+    .then(settleResponse)
+    .catch(settleResponse);
 }
 
 class HttpClient {

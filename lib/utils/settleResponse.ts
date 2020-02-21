@@ -1,26 +1,31 @@
-import { logWriter } from "./logWriter";
+const settleResponse = (ctx: MiddlewareContext) => {
+    const request = {
+        url: ctx.request && ctx.request.url,
+        client: ctx.client && ctx.client.name,
+        method: ctx.request && ctx.request.method,
+        id: ctx.request && ctx.request.id
+    };
 
-const settleResponse = (logger?: Logger) => (ctx: MiddlewareContext) => {
-    if (!ctx.error && ctx.response && ctx.response.data) {
-        if (logger) logWriter(logger, ctx);
-
-        return Promise.resolve({
-            body: ctx.response.data,
-            headers: ctx.response.headers,
-            status: ctx.response.status
-        });
+    const response = ctx.response ? {
+        body: ctx.response.data,
+        headers: ctx.response.headers,
+        status: ctx.response.status,
+        duration: (ctx.time && ctx.time.elapsed !== undefined) ? ctx.time.elapsed : undefined,
+        melchettCached: !!ctx.response.melchettCached
+    } : {}
+    
+    if (!ctx.error && ctx.response) {
+        return Promise.resolve({ request, response });
     }
 
     if (!ctx.error) {
         ctx.error = {
-            error_name: `EUNKNOWN`,
-            error_message: 'An unknown error occurred'
+            name: `EUNKNOWN`,
+            message: 'An unknown error occurred'
         }
     }
 
-    if (logger) logWriter(logger, ctx);
- 
-    return Promise.reject(ctx.error);
+    return Promise.reject({ request, response, error: ctx.error });
 }
 
 export {
