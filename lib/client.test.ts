@@ -36,15 +36,14 @@ describe('client', () => {
                 cache: {
                     store: {
                         isReady: () => true,
-                        get: () => {},
-                        set: () => {},
-                        start: () => {}
+                        get: () => undefined,
+                        set: () => undefined,
+                        start: () => undefined
                     }
                 }
             };
 
             // Act
-            //@ts-ignore
             new HttpClient(config);
 
             // Assert

@@ -1,6 +1,14 @@
 import { parseCacheControl } from '@hapi/wreck';
 import { getRequestHash } from '../utils/requestHash';
 
+const getCacheControl = (response) => {
+    const headerValues = response.headers && response.headers['cache-control'];
+    if (!headerValues) {
+        return;
+    }
+    return parseCacheControl(headerValues);
+}
+
 const isCacheable = (response) => {
     const cacheControl = getCacheControl(response);
     if (cacheControl) {
@@ -11,14 +19,6 @@ const isCacheable = (response) => {
         return isGetRequest && !hasNoCache && hasMaxAge;
     }
     return false;
-}
-
-const getCacheControl = (response) => {
-    const headerValues = response.headers && response.headers['cache-control'];
-    if (!headerValues) {
-        return;
-    }
-    return parseCacheControl(headerValues);
 }
 
 const getCacheKeyObject = (ctx: MiddlewareContext, config: CacheConfig) => {

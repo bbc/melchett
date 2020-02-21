@@ -1,10 +1,10 @@
 import wreck from '@hapi/wreck';
-import { isCacheable, getCacheControl, getCacheTtl, getFromCache, storeInCache, caching } from './caching';
+import { isCacheable, getCacheControl, getCacheTtl, getFromCache, storeInCache } from './caching';
 
 const mockCacheStore = {
     isReady: () => true,
-    get: (key: { segment: string, id: string }) => Promise.resolve(),
-    set: (key: { segment: string, id: string }, value: any, ttl: number) => Promise.resolve(),
+    get: () => Promise.resolve(),
+    set: () => Promise.resolve(),
     start: () => Promise.resolve()
 };
 

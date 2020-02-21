@@ -1,9 +1,11 @@
 const settleResponse = (ctx: MiddlewareContext) => {
     const request = {
-        url: ctx.request && ctx.request.url,
         client: ctx.client && ctx.client.name,
+        url: ctx.request && ctx.request.url,
+        id: ctx.request && ctx.request.id,
+        headers: ctx.request && ctx.request.headers,
         method: ctx.request && ctx.request.method,
-        id: ctx.request && ctx.request.id
+        body: ctx.request && ctx.request.data
     };
 
     const response = ctx.response ? {
