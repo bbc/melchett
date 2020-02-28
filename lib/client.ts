@@ -10,11 +10,14 @@ import { timer } from './middleware/timer';
 import { settleResponse } from './utils/settleResponse';
 
 const version = require('./../package.json').version;
+const CancelToken = axios.CancelToken;
 
 const request = (client: HttpClient, config: RequestConfig) => {
   const requestId = uuidv4();
   config.headers = config.headers || {};
   config.headers['X-Correlation-Id'] = requestId;
+
+  const source = CancelToken.source();
 
   const context: MiddlewareContext = {
     client: {
@@ -24,6 +27,8 @@ const request = (client: HttpClient, config: RequestConfig) => {
     },
     request: {
       id: requestId,
+      cancel: source.cancel,
+      cancelToken: source.token,
       ...config
     }
   };
@@ -73,7 +78,7 @@ class HttpClient {
 
     this._middleware.push(validJson);
     this._middleware.push(validStatus(this._config.successPredicate));
-    this._middleware.push(timer(this._config.timingHeader));
+    this._middleware.push(timer(this._config.timeout, this._config.timingHeader));
 
     if (this._config.circuitBreaker) {
       this._middleware.push(circuitBreaker(this._config.circuitBreaker));
@@ -82,7 +87,6 @@ class HttpClient {
     this._composedMiddleware = compose(this._middleware)
 
     this._agent = axios.create({
-      timeout: this._config.timeout,
       headers: {
         'User-Agent': this._config.userAgent,
       },

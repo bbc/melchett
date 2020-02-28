@@ -27,6 +27,12 @@ const mockCircuitBreaker = circuitBreaker as jest.Mocked<typeof circuitBreaker>;
 const mockValidStatus = validStatus as jest.Mocked<typeof validStatus>;
 const mockSettleResponse = settleResponse as jest.Mocked<typeof settleResponse>;
 
+//@ts-ignore
+mockAxios.CancelToken.source = jest.fn(()=>({
+    token: jest.fn(),
+    cancel: jest.fn()
+}));
+
 describe('client', () => {
     describe('constructor', () => {
         it('should add cache middleware if option set', async () => {
@@ -213,7 +219,9 @@ describe('client', () => {
                     },
                     id: 'test-uuid',
                     method: 'get',
-                    url: 'https://www.bbc.co.uk'
+                    url: 'https://www.bbc.co.uk',
+                    cancel: expect.any(Function),
+                    cancelToken: expect.any(Function)
                 }
             }
 

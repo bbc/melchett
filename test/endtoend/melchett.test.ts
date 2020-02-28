@@ -7,6 +7,7 @@ const expectedRequest = {
     method: "get",
     url: "http://testurl.com/x"
 }
+
 const expectedResponse = {
     body: "",
     headers: {},
@@ -161,7 +162,7 @@ describe('melchett client', () => {
         beforeAll(async () => {
             nock('http://testurl.com')
                 .get('/x')
-                .delayConnection(2500)
+                .delayConnection(2000)
                 .reply(200, { data: 1 }, { 'x-response-time': '2000', 'content-length': '500' })
         });
     
@@ -169,7 +170,7 @@ describe('melchett client', () => {
             const client = new HttpClient({ name: 'test' });
             await expect(client.get('http://testurl.com/x'))
                 .rejects
-                .toMatchObject({ request: expectedRequest, response: {}, error: { name: `ETIMEDOUT`, message: 'Timeout exceeded' }});
+                .toMatchObject({ request: expectedRequest, response: {}, error: { name: `ETIMEDOUT`, message: 'Timeout of 1500ms exceeded' }});
         });
     });
 });
