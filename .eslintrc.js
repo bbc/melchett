@@ -18,7 +18,7 @@ module.exports = {
     },
     rules: {
       semi: ['error','always'],
-      indent: ['error', 4],
+      indent: ['error', 2],
       'no-return-assign': ['error', 'except-parens'],
       'no-new': ['off'],
       'prefer-promise-reject-errors': ['off'],
