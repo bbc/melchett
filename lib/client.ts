@@ -35,14 +35,14 @@ const request = (client: HttpClient, config: RequestConfig) => {
 
   const doRequest = async (ctx: MiddlewareContext) => {
     return client._agent.request(Object.freeze(ctx.request))
-      .then((res) => ctx.response = res)
-      .catch((err) => ctx.error = err);
-  }
+      .then((res) => (ctx.response = res))
+      .catch((err) => (ctx.error = err));
+  };
 
   return client._composedMiddleware(context, doRequest)
     .then(settleResponse)
     .catch(settleResponse);
-}
+};
 
 class HttpClient {
   _agent: AxiosInstance;
@@ -51,7 +51,7 @@ class HttpClient {
   _composedMiddleware;
   _state = {};
 
-  constructor(config: HttpClientConfig) {
+  constructor (config: HttpClientConfig) {
     const defaults = {
       name: 'http',
       userAgent: `melchett/v${version}`,
@@ -84,22 +84,22 @@ class HttpClient {
       this._middleware.push(circuitBreaker(this._config.circuitBreaker));
     }
 
-    this._composedMiddleware = compose(this._middleware)
+    this._composedMiddleware = compose(this._middleware);
 
     this._agent = axios.create({
       headers: {
-        'User-Agent': this._config.userAgent,
+        'User-Agent': this._config.userAgent
       },
       validateStatus: () => true,
       httpsAgent: httpsAgent
     });
   }
 
-  get(url: string, headers?: object): Promise<any> {
+  get (url: string, headers?: object): Promise<any> {
     return request(this, { method: 'get', url, headers });
   }
 
-  post(url: string, body: any, headers?: object): Promise<any> {
+  post (url: string, body: any, headers?: object): Promise<any> {
     return request(this, { method: 'post', url, headers, data: body });
   }
 }
@@ -107,4 +107,4 @@ class HttpClient {
 export {
   HttpClient,
   request
-}
+};

@@ -13,7 +13,7 @@ describe('Timer middleware', () => {
     // Act
     try {
       await timer(1500)({ ...mockContext }, next);
-    } catch (ex) {}
+    } catch (ex) { }
 
     // Assert
     expect(next).toBeCalledTimes(1);
@@ -27,7 +27,7 @@ describe('Timer middleware', () => {
     // Act
     try {
       await timer(1500)(context, next);
-    } catch (ex) {}
+    } catch (ex) { }
 
     // Assert
     expect(typeof context.time.start).toBe('number');
@@ -42,7 +42,7 @@ describe('Timer middleware', () => {
     // Act
     try {
       await timer(1500)(context, next);
-    } catch (ex) {}
+    } catch (ex) { }
 
     // Assert
     expect(typeof context.time.end).toBe('number');
@@ -64,7 +64,7 @@ describe('Timer middleware', () => {
     // Act
     try {
       await timer(1500, 'x-response-time')(context, next);
-    } catch (ex) {}
+    } catch (ex) { }
 
     // Assert
     expect(context.time.elapsed).toBe(23.4);
@@ -76,7 +76,7 @@ describe('Timer middleware', () => {
 
     const errorResult = {
       name: 'ETIMEDOUT',
-      message: 'Timeout of 1ms exceeded',
+      message: 'Timeout of 1ms exceeded'
     };
 
     // Assert
