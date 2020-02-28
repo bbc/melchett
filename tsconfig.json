@@ -4,6 +4,7 @@
         "outDir": "./dist",
         "module": "commonjs",
         "sourceMap": false,
+        "removeComments": true,
         "types": [
             "node",
             "jest"
@@ -18,6 +19,9 @@
     "include": [
         "./lib/**/*"
     ] ,
+    "files": [
+        "lib/global.d.ts"
+    ],
     "exclude": [
         "./lib/**/*.test.ts",
         "node_modules",

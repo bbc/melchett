@@ -4,9 +4,9 @@ import { HttpClient } from '../../lib/client';
 const expectedRequest = {
     client: 'test',
     id: expect.any(String),
-    method: "get",
-    url: "http://testurl.com/x"
-}
+    method: 'get',
+    url: 'http://testurl.com/x'
+};
 
 const expectedResponse = {
     body: '',
@@ -184,14 +184,14 @@ describe('melchett client', () => {
             nock('http://testurl.com')
                 .get('/x')
                 .delayConnection(2000)
-                .reply(200, { data: 1 }, { 'x-response-time': '2000', 'content-length': '500' })
+                .reply(200, { data: 1 }, { 'x-response-time': '2000', 'content-length': '500' });
         });
 
         it('should return a timeout error', async () => {
             const client = new HttpClient({ name: 'test' });
             await expect(client.get('http://testurl.com/x'))
                 .rejects
-                .toMatchObject({ request: expectedRequest, response: {}, error: { name: `ETIMEDOUT`, message: 'Timeout of 1500ms exceeded' }});
+                .toMatchObject({ request: expectedRequest, response: {}, error: { name: 'ETIMEDOUT', message: 'Timeout of 1500ms exceeded' } });
         });
     });
 });

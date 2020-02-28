@@ -17,8 +17,9 @@ module.exports = {
       }
     },
     rules: {
-      semi: ["error","always"],
-      indent: ["error", 4],
+      semi: ['error','always'],
+      indent: ['error', 4],
+      'no-return-assign': ['error', 'except-parens'],
       'no-new': ['off'],
       'prefer-promise-reject-errors': ['off'],
       '@typescript-eslint/explicit-function-return-type': 'off',

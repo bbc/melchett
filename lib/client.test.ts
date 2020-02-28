@@ -27,8 +27,7 @@ const mockCircuitBreaker = circuitBreaker as jest.Mocked<typeof circuitBreaker>;
 const mockValidStatus = validStatus as jest.Mocked<typeof validStatus>;
 const mockSettleResponse = settleResponse as jest.Mocked<typeof settleResponse>;
 
-//@ts-ignore
-mockAxios.CancelToken.source = jest.fn(()=>({
+mockAxios.CancelToken.source = jest.fn(() => ({
     token: jest.fn(),
     cancel: jest.fn()
 }));
