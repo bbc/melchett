@@ -2,12 +2,11 @@ import { HttpClient, request } from './client';
 import axios from 'axios';
 import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
+
 import * as caching from './middleware/caching';
 import * as circuitBreaker from './middleware/circuitBreaker';
 import * as validStatus from './middleware/validStatus';
 import * as settleResponse from './utils/settleResponse';
-
-const version = require('./../package.json').version;
 
 jest.mock('fs');
 jest.mock('axios');
@@ -19,7 +18,9 @@ jest.mock('./middleware/validStatus');
 jest.mock('./middleware/validJson');
 jest.mock('./utils/settleResponse');
 
-const mockAxios = axios as jest.Mocked<typeof axios>;
+const version = require('./../package.json').version;
+
+const mockAxios = axios as undefined as jest.Mocked<typeof axios>;
 const mockUuid = uuidv4 as jest.Mocked<typeof uuidv4>;
 const mockCompose = compose as jest.Mocked<typeof compose>;
 const mockCaching = caching as jest.Mocked<typeof caching>;
@@ -27,6 +28,7 @@ const mockCircuitBreaker = circuitBreaker as jest.Mocked<typeof circuitBreaker>;
 const mockValidStatus = validStatus as jest.Mocked<typeof validStatus>;
 const mockSettleResponse = settleResponse as jest.Mocked<typeof settleResponse>;
 
+// @ts-ignore
 mockAxios.CancelToken.source = jest.fn(() => ({
     token: jest.fn(),
     cancel: jest.fn()

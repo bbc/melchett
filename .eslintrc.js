@@ -23,5 +23,6 @@ module.exports = {
       'no-new': ['off'],
       'prefer-promise-reject-errors': ['off'],
       '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/ban-ts-ignore':["off"]
     }
   };

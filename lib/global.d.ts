@@ -53,6 +53,11 @@ interface Hook {
 
   type MiddlewareFunc = (context: MiddlewareContext, next: () => {}) => {};
 
+  interface KeyObject {
+    pem: string | Buffer;
+    passphrase?: string;
+}
+
   interface HttpClientConfig {
     name?: string;
     timeout?: number;
@@ -66,6 +71,6 @@ interface Hook {
     agentOptions?: {
       cert?: string | Buffer | Array<string | Buffer>;
       ca?: string | Buffer | Array<string | Buffer>;
-      key?: string | Buffer | Array<Buffer | Record<string, any>>;
+      key?: string | Buffer | Array<Buffer | KeyObject>;
     };
   }
