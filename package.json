@@ -1,6 +1,6 @@
 {
     "name": "melchett",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "description": "A plugin-based HTTP client for NodeJS",
     "main": "dist/client.js",
     "scripts": {
