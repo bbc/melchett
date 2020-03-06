@@ -32,7 +32,8 @@
         "@hapi/wreck": "^16.0.1",
         "axios": "^0.19.2",
         "koa-compose": "^4.1.0",
-        "opossum": "^4.2.4"
+        "opossum": "^4.2.4",
+        "uuid": "^3.4.0"
     },
     "devDependencies": {
         "@types/catbox": "^10.0.6",
