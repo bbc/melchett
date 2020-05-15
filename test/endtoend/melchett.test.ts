@@ -179,6 +179,71 @@ describe('melchett client', () => {
     });
   });
 
+  describe.only('circuit breakers - multiple clients', () => {
+    const config = {
+      name: 'test',
+      circuitBreaker: {
+        errorThresholdPercentage: 50,
+        resetTimeout: 1000,
+        rollingCountTimeout: 6000
+      }
+    };
+
+    beforeAll(async () => {
+      nock('http://testurl.com')
+        .persist()
+        .get('/x')
+        .reply(500, undefined);
+    });
+
+    it('should NOT fire the open circuit breaker when running multiple clients', async () => {
+      const clients = [
+        new HttpClient({ ...config, name: 'C1' }),
+        new HttpClient({ ...config, name: 'C2' }),
+        new HttpClient({ ...config, name: 'C3' }),
+        new HttpClient({ ...config, name: 'C4' }),
+        new HttpClient({ ...config, name: 'C5' })
+      ];
+
+      for (const client of clients) {
+        await expect(client.get('http://testurl.com/x'))
+          .rejects
+          .toMatchObject({
+            request: { ...expectedRequest, client: expect.any(String) },
+            response: expectedResponse,
+            error: { name: 'ESTATUS500', message: 'Status code 500 received for http://testurl.com/x' }
+          });
+      }
+    });
+
+    it('should NOT fire the open circuit breaker when running multiple clients with 2 failed requests (errorThresholdPercentage: 50%)', async () => {
+      const clients = [
+        new HttpClient({ ...config, name: 'C1' }),
+        new HttpClient({ ...config, name: 'C2' }),
+        new HttpClient({ ...config, name: 'C3' }),
+        new HttpClient({ ...config, name: 'C4' }),
+        new HttpClient({ ...config, name: 'C5' })
+      ];
+
+      for (const client of clients) {
+        await client.get('http://testurl.com/x')
+          .catch(async () => {
+            await expect(client.get('http://testurl.com/x'))
+              .rejects
+              .toMatchObject({
+                request: { ...expectedRequest, client: expect.any(String) },
+                response: expectedResponse,
+                error: { name: 'ESTATUS500', message: 'Status code 500 received for http://testurl.com/x' }
+              });
+          });
+      }
+    });
+
+    afterAll(() => {
+      nock.cleanAll();
+    });
+  });
+
   describe('Timeouts ', () => {
     beforeAll(async () => {
       nock('http://testurl.com')
