@@ -179,7 +179,7 @@ describe('melchett client', () => {
     });
   });
 
-  describe.only('circuit breakers - multiple clients', () => {
+  describe('circuit breakers - multiple clients', () => {
     const config = {
       name: 'test',
       circuitBreaker: {
