@@ -184,9 +184,7 @@ describe('melchett client', () => {
       name: 'test',
       circuitBreaker: {
         errorThresholdPercentage: 10,
-        resetTimeout: 1000,
-        rollingCountTimeout: 6000,
-        volumeThreshold: 50
+        resetTimeout: 1000
       }
     };
 
