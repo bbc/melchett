@@ -233,4 +233,48 @@ describe('melchett client', () => {
         .toMatchObject({ request: expectedRequest, response: {}, error: { name: 'ETIMEDOUT', message: 'Timeout of 1500ms exceeded' } });
     });
   });
+
+  describe('Redirects', () => {
+    describe('303', () => {
+      beforeAll(async () => {
+        nock('http://testurl.com')
+          .post('/one')
+          .reply(303, { data: 1 }, { Location: '/two', 'x-response-time': '500', 'content-length': '500' });
+        nock('http://testurl.com')
+          .get('/two')
+          .reply(200, { data: 'successfully redirected 303' }, { 'x-response-time': '500', 'content-length': '500' });
+      });
+
+      it('should redirect a 303 and alter the verb to GET', async () => {
+        const client = new HttpClient({ name: 'test' });
+
+        const result = await client.post('http://testurl.com/one', { param: 'foo' }, { foo: 'bar' });
+
+        expect(result.response.status).toEqual(200);
+        expect(result.response.body).toMatchObject({ data: 'successfully redirected 303' });
+        expect(result.request.headers).toEqual(expect.objectContaining({ foo: 'bar' }));
+      });
+    });
+
+    describe('302', () => {
+      beforeAll(async () => {
+        nock('http://testurl.com')
+          .get('/one')
+          .reply(302, { data: 1 }, { Location: '/two', 'x-response-time': '500', 'content-length': '500' });
+        nock('http://testurl.com')
+          .get('/two')
+          .reply(200, { data: 'successfully redirected 302' }, { 'x-response-time': '500', 'content-length': '500' });
+      });
+
+      it('should redirect a 302 preserving the method verb', async () => {
+        const client = new HttpClient({ name: 'test' });
+
+        const result = await client.get('http://testurl.com/one', { foo: 'bar' });
+
+        expect(result.response.status).toEqual(200);
+        expect(result.response.body).toMatchObject({ data: 'successfully redirected 302' });
+        expect(result.request.headers).toEqual(expect.objectContaining({ foo: 'bar' }));
+      });
+    });
+  });
 });
