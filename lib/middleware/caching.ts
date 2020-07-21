@@ -96,10 +96,22 @@ const caching = (cache: CacheCombined) => {
       }
     }
 
-    const cachedResponse = await getFromCache(cache, ctx);
-    if (cachedResponse) {
-      ctx.response = cachedResponse;
-      return ctx;
+    try {
+      const cachedResponse = await getFromCache(cache, ctx);
+
+      if (cachedResponse) {
+        ctx.response = cachedResponse;
+        return ctx;
+      }
+    } catch (err) {
+      if (!cache.ignoreErrors) {
+        ctx.error = {
+          name: 'ECACHEREAD',
+          message: 'Failed to read response from cache'
+        };
+
+        return Promise.reject(ctx);
+      }
     }
 
     await next();
