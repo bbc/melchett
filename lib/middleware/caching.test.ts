@@ -1,5 +1,5 @@
 import wreck from '@hapi/wreck';
-import { isCacheable, getCacheControl, getCacheTtl, getFromCache, storeInCache } from './caching';
+import { caching, isCacheable, getCacheControl, getCacheTtl, getFromCache, storeInCache } from './caching';
 
 const mockCacheStore = {
   isReady: () => true,
@@ -15,6 +15,144 @@ const mockCacheConfig = {
 };
 
 describe('Caching middleware', () => {
+  describe('handler', () => {
+    it('should start cache engine if not ready', async () => {
+      // Arrange
+      const startFn = jest.fn();
+      const cache = {
+        store: {
+          isReady: () => false,
+          get: () => Promise.resolve(),
+          set: () => Promise.resolve(),
+          start: startFn
+        }
+      };
+      const handler = caching(cache);
+
+      const mockContext: MiddlewareContext = {
+        client: { name: 'test', userAgent: 'melchett/test' },
+        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+      };
+      const nextFn = jest.fn();
+
+      // Act
+      try {
+        await handler(mockContext, nextFn);
+      } catch (ex) { }
+
+      // Assert
+      expect(startFn).toBeCalledTimes(1);
+    });
+
+    it('should return ECACHEINIT if cache start fails', async () => {
+      // Arrange
+      const cache = {
+        store: {
+          isReady: () => false,
+          get: () => Promise.resolve(),
+          set: () => Promise.resolve(),
+          start: async () => { throw new Error('test'); }
+        },
+        ignoreErrors: false
+      };
+      const handler = caching(cache);
+
+      const mockContext: MiddlewareContext = {
+        client: { name: 'test', userAgent: 'melchett/test' },
+        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+      };
+      const nextFn = jest.fn();
+
+      // Act & Assert
+      return expect(handler(mockContext, nextFn)).rejects.toMatchObject({
+        error: {
+          name: 'ECACHEINIT',
+          message: 'Cache engine failed to start'
+        }
+      });
+    });
+
+    it('should return next middleware in chain if ignoreErrors is set', async () => {
+      // Arrange
+      const cache = {
+        store: {
+          isReady: () => false,
+          get: () => Promise.resolve(),
+          set: () => Promise.resolve(),
+          start: async () => { throw new Error('test'); }
+        },
+        ignoreErrors: true
+      };
+      const handler = caching(cache);
+
+      const mockContext: MiddlewareContext = {
+        client: { name: 'test', userAgent: 'melchett/test' },
+        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+      };
+      const nextFn = () => 'next middleware';
+
+      // Act & Assert
+      return expect(handler(mockContext, nextFn)).resolves.toEqual('next middleware');
+    });
+
+    it('should return ECACHEREAD if cache read fails', async () => {
+      // Arrange
+      const cache = {
+        store: {
+          isReady: () => true,
+          get: () => Promise.reject(),
+          set: () => Promise.resolve(),
+          start: () => Promise.resolve()
+        },
+        ignoreErrors: false
+      };
+      const handler = caching(cache);
+
+      const mockContext: MiddlewareContext = {
+        client: { name: 'test', userAgent: 'melchett/test' },
+        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+      };
+      const nextFn = jest.fn();
+
+      // Act & Assert
+      return expect(handler(mockContext, nextFn)).rejects.toMatchObject({
+        error: {
+          name: 'ECACHEREAD',
+          message: 'Failed to read response from cache'
+        }
+      });
+    });
+
+    it('should return ECACHESTORE if cache write fails', async () => {
+      // Arrange
+      const cache = {
+        store: {
+          isReady: () => true,
+          get: () => Promise.resolve(),
+          set: () => Promise.reject(),
+          start: () => Promise.resolve()
+        },
+        ignoreErrors: false
+      };
+      const handler = caching(cache);
+
+      const mockContext: MiddlewareContext = {
+        client: { name: 'test', userAgent: 'melchett/test' },
+        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
+        response: { config: { method: 'get' }, headers: { 'cache-control': 'max-age=100' } }
+      };
+      const nextFn = jest.fn();
+
+      // Act & Assert
+      return expect(handler(mockContext, nextFn)).rejects.toMatchObject({
+        error: {
+          name: 'ECACHESTORE',
+          message: 'Failed to write response to cache'
+        }
+      });
+    });
+  });
+
   describe('isCacheable', () => {
     it('POST requests not cachable', async () => {
       // Arrange
