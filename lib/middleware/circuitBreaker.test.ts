@@ -6,11 +6,21 @@ const defaultContext: MiddlewareContext = {
   response: { status: undefined }
 };
 
-const mockOpossum = { opened: false, fire: () => Promise.resolve() };
+let mockBreakerOpen;
+const mockOpossumError = new Error('mockOpossumError');
 jest.mock('opossum', () => {
-  return function () {
-    return mockOpossum;
+  const opossum = function (fn) {
+    return {
+      fire: (...args) => {
+        if (mockBreakerOpen) {
+          throw mockOpossumError;
+        }
+        return fn && fn(...args);
+      }
+    };
   };
+  opossum.isOurError = (error: unknown) => error === mockOpossumError;
+  return opossum;
 });
 
 describe('Circuit breaker', () => {
@@ -19,7 +29,7 @@ describe('Circuit breaker', () => {
 
     beforeEach(() => {
       context = { ...defaultContext };
-      mockOpossum.opened = true;
+      mockBreakerOpen = true;
     });
 
     it('should add an error to the context', async () => {
@@ -41,7 +51,7 @@ describe('Circuit breaker', () => {
 
     beforeEach(() => {
       context = { ...defaultContext };
-      mockOpossum.opened = false;
+      mockBreakerOpen = false;
     });
 
     it('should call the next function and context NOT have errors', async () => {
@@ -52,6 +62,27 @@ describe('Circuit breaker', () => {
 
       expect(next).toBeCalled();
       expect(context.error).toBeUndefined();
+    });
+
+    it('should call the next function and context NOT have errors on a 500', async () => {
+      const handler = circuitBreaker({ errorThresholdPercentage: Infinity, resetTimeout: Infinity });
+      const next = jest.fn();
+
+      await handler({ ...context, response: { status: 500 } }, next);
+
+      expect(next).toBeCalled();
+      expect(context.error).toBeUndefined();
+    });
+
+    it('should rethrow a user error', async () => {
+      const handler = circuitBreaker({ errorThresholdPercentage: Infinity, resetTimeout: Infinity });
+      const mockError = new Error('mockError');
+
+      const res = handler({ ...context, response: { status: 500 } }, () => {
+        throw mockError;
+      });
+
+      await expect(res).rejects.toBe(mockError);
     });
   });
 });
