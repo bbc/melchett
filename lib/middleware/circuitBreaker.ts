@@ -18,7 +18,7 @@ const circuitBreakerHandler = (config: CircuitBreakerConfig) => {
     } catch (e) {
       if (CircuitBreaker.isOurError(e)) {
         ctx.error = { name: 'ECIRCUITBREAKER', message: `Circuit breaker is open for ${ctx.client.name}` };
-        return Promise.reject(ctx);
+        throw ctx;
       } else if (e !== invalidStatusError) {
         throw e;
       }
