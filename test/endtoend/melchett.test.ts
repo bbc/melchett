@@ -80,6 +80,36 @@ describe('melchett client', () => {
     });
   });
 
+  describe('DELETE', () => {
+    beforeAll(() => {
+      nock('http://testurl.com')
+        .persist()
+        .delete('/x')
+        .reply(200, { data: 1 }, { 'x-response-time': '500', 'content-length': '500' });
+    });
+
+    afterAll(() => nock.cleanAll());
+
+    describe('request', () => {
+      it('resolves with expected response', async () => {
+        const client = new HttpClient({ name: 'test' });
+        const result = await client.delete('http://testurl.com/x');
+
+        expect(result.response.status).toEqual(200);
+        expect(result.response.body).toMatchObject({ data: 1 });
+      });
+    });
+
+    describe('client', () => {
+      it('sets expected request headers', async () => {
+        const client = new HttpClient({ name: 'test' });
+        const result = await client.delete('http://testurl.com/x', { foo: 'bar' });
+
+        expect(result.request.headers).toEqual(expect.objectContaining({ foo: 'bar' }));
+      });
+    });
+  });
+
   describe('receives a not found failed http response', () => {
     it('receives a 404 response', async () => {
       const expectedResponseWithHeaders = {
