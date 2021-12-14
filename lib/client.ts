@@ -102,6 +102,10 @@ class HttpClient {
   post (url: string, body: any, headers?: object): Promise<any> {
     return request(this, { method: 'post', url, headers, data: body });
   }
+
+  delete (url: string, headers?: object): Promise<any> {
+    return request(this, { method: 'delete', url, headers });
+  }
 }
 
 export {

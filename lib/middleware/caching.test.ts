@@ -169,6 +169,21 @@ describe('Caching middleware', () => {
       expect(result).toBeFalsy();
     });
 
+    it('DELETE requests not cachable', async () => {
+      // Arrange
+      const response = {
+        config: {
+          method: 'delete'
+        }
+      };
+
+      // Act
+      const result = isCacheable(response);
+
+      // Assert
+      expect(result).toBeFalsy();
+    });
+
     it('no-cache is not cachable', async () => {
       // Arrange
       const response = {

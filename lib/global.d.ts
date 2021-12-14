@@ -24,7 +24,7 @@ interface CacheStore {
 type CacheCombined = CacheConfig & { store: CacheStore };
 
 interface RequestConfig {
-  method: 'get' | 'post';
+  method: 'get' | 'post' | 'delete';
   url: string;
   headers?: any;
   data?: any;

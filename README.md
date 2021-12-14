@@ -45,6 +45,7 @@ Once the `HttpClient` has been instantiated, the following methods are available
 <pre>
 <i>client</i>.get(<i>url</i> [, <i>headers</i>]);
 <i>client</i>.post(<i>url</i>, <i>body</i> [, <i>headers</i>]);
+<i>client</i>.delete(<i>url</i> [, <i>headers</i>]);
 </pre>
 
 #### Parameters
@@ -110,4 +111,4 @@ This will symlink `melchett` into the consumer's `node_modules` folder and allow
 
 Be sure to read the [contributing document](./CONTRIBUTING.md) beforehand.
 
-Copyright © 2020 BBC.
+Copyright © 2021 BBC.
