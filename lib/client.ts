@@ -55,7 +55,7 @@ class HttpClient {
     const defaults = {
       name: 'http',
       userAgent: `melchett/v${version}`,
-      timeout: 1500,
+      timeout: 4000,
       retries: 1,
       successPredicate: (status: number) => status >= 200 && status < 400
     };
