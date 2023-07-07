@@ -13,7 +13,8 @@ describe('Response settler', () => {
       response: {
         data: { foo: 'bar' },
         headers: { 'x-test': 'baz' },
-        status: 200
+        status: 200,
+        statusText: 'OK'
       }
     };
 

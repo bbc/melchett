@@ -38,7 +38,7 @@ describe('JSON validator middleware', () => {
     // Arrange
     const next = jest.fn();
 
-    const context = { ...mockContext, response: { data: 'failstring' } };
+    const context = { ...mockContext, response: { data: 'failstring' } } as unknown as MiddlewareContext;
 
     // Assert
     await expect(validJson(context, next)).rejects.toMatchObject({
@@ -50,7 +50,7 @@ describe('JSON validator middleware', () => {
     // Arrange
     const next = jest.fn();
 
-    const context = { ...mockContext, response: { data: { foo: 'bar' } } };
+    const context = { ...mockContext, response: { data: { foo: 'bar' } } } as unknown as MiddlewareContext;
 
     // Assert
     await expect(validJson(context, next)).resolves.toMatchObject(context);

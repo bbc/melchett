@@ -136,11 +136,11 @@ describe('Caching middleware', () => {
       };
       const handler = caching(cache);
 
-      const mockContext: MiddlewareContext = {
+      const mockContext = {
         client: { name: 'test', userAgent: 'melchett/test' },
         request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
         response: { config: { method: 'get' }, headers: { 'cache-control': 'max-age=100' } }
-      };
+      } as unknown as MiddlewareContext;
       const nextFn = jest.fn();
 
       // Act & Assert
@@ -337,7 +337,7 @@ describe('Caching middleware', () => {
         client: { name: 'test', userAgent: 'melchett/test' },
         request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
         response: { config: { method: 'get' }, headers: { 'cache-control': 'max-age=100' } }
-      };
+      } as unknown as MiddlewareContext;
 
       // Act
       storeInCache(cache, context);
@@ -357,7 +357,7 @@ describe('Caching middleware', () => {
         client: { name: 'test', userAgent: 'melchett/test' },
         request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
         response: { config: { method: 'post' }, headers: { 'cache-control': 'max-age=100' } }
-      };
+      } as unknown as MiddlewareContext;
 
       // Act
       storeInCache(cache, context);

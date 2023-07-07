@@ -1,4 +1,4 @@
-const getTimingFromHeader = (timingHeader?: string, response?: any) => {
+const getTimingFromHeader = (timingHeader?: string, response?: MiddlewareContext['response']) => {
   if (timingHeader && response && response.headers) {
     return parseFloat(response.headers[timingHeader]);
   }
