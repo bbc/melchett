@@ -199,7 +199,7 @@ describe('melchett client', () => {
         setTimeout(async () => {
           resolve(expect(client.get('http://testurl.com/x'))
             .rejects
-            .toMatchObject({ request: expectedRequest, response: expectedResponse, error: { name: 'ESTATUS500', message: 'Status code 500 received for http://testurl.com/x', details: '' } }));
+            .toMatchObject({ request: expectedRequest, response: expectedResponse, error: { name: 'ESTATUS500', message: 'Status code 500 received for http://testurl.com/x' } }));
         }, 2000);
       });
     });

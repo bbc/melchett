@@ -1,5 +1,5 @@
 import { HttpClient, request } from './client';
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import uuidv4 from 'uuid/v4';
 import compose from 'koa-compose';
 
@@ -187,7 +187,7 @@ describe('client', () => {
       const mockAgentRequest = jest.fn();
 
       const client = new HttpClient(clientConfig);
-      client._agent = { request: mockAgentRequest } as any;
+      client._agent = { request: mockAgentRequest } as unknown as AxiosInstance;
 
       // Act
       request(client, requestConfig);

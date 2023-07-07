@@ -23,10 +23,12 @@ interface CacheStore {
 
 type CacheCombined = CacheConfig & { store: CacheStore };
 
+type HeaderObject = Record<string, string | undefined>
+
 interface RequestConfig {
   method: 'get' | 'post' | 'delete';
   url: string;
-  headers?: any;
+  headers?: HeaderObject;
   data?: any;
   id?: string;
   cancel?: (arg0: string | object) => void;
@@ -42,7 +44,13 @@ type MiddlewareContext = {
     };
   };
   request: RequestConfig;
-  response?: any;
+  response?: {
+    data: unknown;
+    headers: HeaderObject;
+    status: number;
+    statusText: string;
+    melchettCached?: boolean;
+  };
   error?: any;
   time?: {
     start: number;
@@ -50,6 +58,29 @@ type MiddlewareContext = {
     elapsed?: number;
   };
 };
+
+type SettledResponse = {
+  request: {
+    client: string;
+    url: string;
+    id: string;
+    headers: HeaderObject;
+    method: RequestConfig['method'];
+    body: unknown;
+  };
+  response: {
+    body: unknown;
+    headers: HeaderObject;
+    status: number;
+    duration: number;
+    melchettCached: boolean;
+  };
+}
+type RejectedResponse = {
+  request: SettledResponse['request'];
+  response?: SettledResponse['response'];
+  error: any;
+}
 
 type MiddlewareFunc = (context: MiddlewareContext, next: () => {}) => {};
 
@@ -73,4 +104,13 @@ interface HttpClientConfig {
     ca?: string | Buffer | Array<string | Buffer>;
     key?: string | Buffer | Array<Buffer | KeyObject>;
   };
+}
+
+declare module 'melchett' {
+  class HttpClient {
+    constructor(config: HttpClientConfig);
+    get: (url: string, headers?: HeaderObject) => Promise<SettledResponse>;
+    post: (url: string, body: object, headers?: HeaderObject) => Promise<SettledResponse>;
+    delete: (url: string, headers?: HeaderObject) => Promise<SettledResponse>;
+  }
 }

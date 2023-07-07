@@ -59,7 +59,7 @@ describe('Timer middleware', () => {
           'x-response-time': '23.4'
         }
       }
-    };
+    } as unknown as MiddlewareContext;
 
     // Act
     try {
