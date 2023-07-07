@@ -3,6 +3,7 @@
     "version": "3.1.0",
     "description": "A plugin-based HTTP client for NodeJS",
     "main": "dist/client.js",
+    "types": "lib/global.d.ts",
     "scripts": {
         "build": "rm -rf dist/ && npm run compile",
         "compile": "tsc",
@@ -20,7 +21,8 @@
         "url": "git+https://github.com/bbc/melchett.git"
     },
     "files": [
-        "dist/**/*"
+        "dist/**/*",
+        "**/*.d.ts"
     ],
     "author": "BBC",
     "license": "Apache-2.0",
