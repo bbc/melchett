@@ -44,91 +44,177 @@ describe('Caching middleware', () => {
       expect(startFn).toBeCalledTimes(1);
     });
 
-    it('should return ECACHEINIT if cache start fails', async () => {
-      // Arrange
-      const cache = {
-        store: {
-          isReady: () => false,
-          get: () => Promise.resolve(),
-          set: () => Promise.resolve(),
-          start: async () => { throw new Error('test'); }
-        },
-        ignoreErrors: false
-      };
-      const handler = caching(cache);
+    describe('ECACHEINIT', () => {
+      it('should return ECACHEINIT if cache start fails', async () => {
+        // Arrange
+        const cache = {
+          store: {
+            isReady: () => false,
+            get: () => Promise.resolve(),
+            set: () => Promise.resolve(),
+            start: async () => { throw new Error('test'); }
+          },
+          ignoreErrors: false
+        };
+        const handler = caching(cache);
 
-      const mockContext: MiddlewareContext = {
-        client: { name: 'test', userAgent: 'melchett/test' },
-        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
-      };
-      const nextFn = jest.fn();
+        const mockContext: MiddlewareContext = {
+          client: { name: 'test', userAgent: 'melchett/test' },
+          request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+        };
+        const nextFn = jest.fn();
 
-      // Act & Assert
-      return expect(handler(mockContext, nextFn)).rejects.toMatchObject({
-        error: {
-          name: 'ECACHEINIT',
-          message: 'Cache engine failed to start'
-        }
+        // Act & Assert
+        return expect(handler(mockContext, nextFn)).rejects.toMatchObject({
+          error: {
+            name: 'ECACHEINIT',
+            message: 'Cache engine failed to start'
+          }
+        });
+      });
+
+      it('should return next middleware in chain if ignoreErrors is set', async () => {
+        // Arrange
+        const cache = {
+          store: {
+            isReady: () => false,
+            get: () => Promise.resolve(),
+            set: () => Promise.resolve(),
+            start: async () => { throw new Error('test'); }
+          },
+          ignoreErrors: true
+        };
+        const handler = caching(cache);
+
+        const mockContext: MiddlewareContext = {
+          client: { name: 'test', userAgent: 'melchett/test' },
+          request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+        };
+        const nextFn = () => 'next middleware';
+
+        // Act & Assert
+        return expect(handler(mockContext, nextFn)).resolves.toEqual('next middleware');
       });
     });
 
-    it('should return next middleware in chain if ignoreErrors is set', async () => {
-      // Arrange
-      const cache = {
-        store: {
-          isReady: () => false,
-          get: () => Promise.resolve(),
-          set: () => Promise.resolve(),
-          start: async () => { throw new Error('test'); }
-        },
-        ignoreErrors: true
-      };
-      const handler = caching(cache);
+    describe('ECACHEREAD', () => {
+      it('should return ECACHEREAD if cache read fails', async () => {
+        // Arrange
+        const cache = {
+          store: {
+            isReady: () => true,
+            get: () => Promise.reject(),
+            set: () => Promise.resolve(),
+            start: () => Promise.resolve()
+          },
+          ignoreErrors: false
+        };
+        const handler = caching(cache);
 
-      const mockContext: MiddlewareContext = {
-        client: { name: 'test', userAgent: 'melchett/test' },
-        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
-      };
-      const nextFn = () => 'next middleware';
+        const mockContext: MiddlewareContext = {
+          client: { name: 'test', userAgent: 'melchett/test' },
+          request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+        };
+        const nextFn = jest.fn();
 
-      // Act & Assert
-      return expect(handler(mockContext, nextFn)).resolves.toEqual('next middleware');
+        // Act & Assert
+        await expect(handler(mockContext, nextFn)).rejects.toMatchObject({
+          error: {
+            name: 'ECACHEREAD',
+            message: 'Failed to read response from cache'
+          }
+        });
+        expect(nextFn).not.toHaveBeenCalled();
+      });
+
+      it('should call next middleware and resolve context if ignoreErrors is set', async () => {
+        // Arrange
+        const cache = {
+          store: {
+            isReady: () => true,
+            get: () => Promise.reject(),
+            set: () => Promise.resolve(),
+            start: () => Promise.resolve()
+          },
+          ignoreErrors: true
+        };
+        const handler = caching(cache);
+
+        const mockContext: MiddlewareContext = {
+          client: { name: 'test', userAgent: 'melchett/test' },
+          request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+        };
+        const nextFn = jest.fn();
+
+        // Act & Assert
+        await expect(handler(mockContext, nextFn)).resolves.toEqual(mockContext);
+        expect(nextFn).toHaveBeenCalled();
+      });
     });
 
-    it('should return ECACHEREAD if cache read fails', async () => {
+    describe('ECACHESTORE', () => {
+      it('should return ECACHESTORE if cache write fails', async () => {
+        // Arrange
+        const cache = {
+          store: {
+            isReady: () => true,
+            get: () => Promise.resolve(),
+            set: () => Promise.reject(),
+            start: () => Promise.resolve()
+          },
+          ignoreErrors: false
+        };
+        const handler = caching(cache);
+
+        const mockContext = {
+          client: { name: 'test', userAgent: 'melchett/test' },
+          request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
+          response: { config: { method: 'get' }, headers: { 'cache-control': 'max-age=100' } }
+        } as unknown as MiddlewareContext;
+        const nextFn = jest.fn();
+
+        // Act & Assert
+        await expect(handler(mockContext, nextFn)).rejects.toMatchObject({
+          error: {
+            name: 'ECACHESTORE',
+            message: 'Failed to write response to cache'
+          }
+        });
+        expect(nextFn).toHaveBeenCalled();
+      });
+
+      it('should resolve context if ignoreErrors is set', async () => {
+        // Arrange
+        const cache = {
+          store: {
+            isReady: () => true,
+            get: () => Promise.resolve(),
+            set: () => Promise.reject(),
+            start: () => Promise.resolve()
+          },
+          ignoreErrors: true
+        };
+        const handler = caching(cache);
+
+        const mockContext = {
+          client: { name: 'test', userAgent: 'melchett/test' },
+          request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
+          response: { config: { method: 'get' }, headers: { 'cache-control': 'max-age=100' } }
+        } as unknown as MiddlewareContext;
+        const nextFn = jest.fn();
+
+        // Act & Assert
+        await expect(handler(mockContext, nextFn)).resolves.toEqual(mockContext);
+        expect(nextFn).toHaveBeenCalled();
+      });
+    });
+
+    it('should return cached value if found, and not call next', async () => {
       // Arrange
       const cache = {
         store: {
           isReady: () => true,
-          get: () => Promise.reject(),
-          set: () => Promise.resolve(),
-          start: () => Promise.resolve()
-        },
-        ignoreErrors: false
-      };
-      const handler = caching(cache);
-
-      const mockContext: MiddlewareContext = {
-        client: { name: 'test', userAgent: 'melchett/test' },
-        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
-      };
-      const nextFn = jest.fn();
-
-      // Act & Assert
-      return expect(handler(mockContext, nextFn)).rejects.toMatchObject({
-        error: {
-          name: 'ECACHEREAD',
-          message: 'Failed to read response from cache'
-        }
-      });
-    });
-
-    it('should return ECACHESTORE if cache write fails', async () => {
-      // Arrange
-      const cache = {
-        store: {
-          isReady: () => true,
-          get: () => Promise.resolve(),
+          get: () => Promise.resolve({ item: '{"foo":"bar"}' }),
           set: () => Promise.reject(),
           start: () => Promise.resolve()
         },
@@ -136,20 +222,20 @@ describe('Caching middleware', () => {
       };
       const handler = caching(cache);
 
-      const mockContext = {
+      const mockContext: MiddlewareContext = {
         client: { name: 'test', userAgent: 'melchett/test' },
-        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} },
-        response: { config: { method: 'get' }, headers: { 'cache-control': 'max-age=100' } }
-      } as unknown as MiddlewareContext;
+        request: { url: 'https://www.bbc.co.uk', method: 'get', headers: {} }
+      };
       const nextFn = jest.fn();
 
       // Act & Assert
-      return expect(handler(mockContext, nextFn)).rejects.toMatchObject({
-        error: {
-          name: 'ECACHESTORE',
-          message: 'Failed to write response to cache'
+      await expect(handler(mockContext, nextFn)).resolves.toMatchObject({
+        response: {
+          foo: 'bar'
         }
       });
+
+      expect(nextFn).not.toHaveBeenCalled();
     });
   });
 
@@ -301,6 +387,17 @@ describe('Caching middleware', () => {
 
       // Assert
       expect(result).toEqual(100);
+    });
+
+    it('returns config value if no max-age header', async () => {
+      // Arrange
+      const response = { headers: { } };
+
+      // Act
+      const result = getCacheTtl(response, mockCacheConfig);
+
+      // Assert
+      expect(result).toEqual(200);
     });
   });
 
