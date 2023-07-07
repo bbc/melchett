@@ -12,7 +12,7 @@ import { settleResponse } from './utils/settleResponse';
 const version = require('./../package.json').version;
 const CancelToken = axios.CancelToken;
 
-const request = (client: HttpClient, config: RequestConfig) => {
+const request = (client: HttpClient, config: RequestConfig): Promise<SettledResponse | RejectedResponse> => {
   const requestId = uuidv4();
   config.headers = config.headers || {};
   config.headers['X-Correlation-Id'] = requestId;
@@ -95,15 +95,15 @@ class HttpClient {
     });
   }
 
-  get (url: string, headers?: object): Promise<any> {
+  get (url: string, headers?: HeaderObject) {
     return request(this, { method: 'get', url, headers });
   }
 
-  post (url: string, body: any, headers?: object): Promise<any> {
+  post (url: string, body: object, headers?: HeaderObject) {
     return request(this, { method: 'post', url, headers, data: body });
   }
 
-  delete (url: string, headers?: object): Promise<any> {
+  delete (url: string, headers?: HeaderObject) {
     return request(this, { method: 'delete', url, headers });
   }
 }

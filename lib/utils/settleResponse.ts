@@ -1,10 +1,10 @@
-const settleResponse = (ctx: MiddlewareContext) => {
+const settleResponse = (ctx: MiddlewareContext): Promise<SettledResponse | RejectedResponse> => {
   const request = {
     client: ctx.client && ctx.client.name,
     url: ctx.request && ctx.request.url,
     id: ctx.request && ctx.request.id,
     headers: ctx.request && ctx.request.headers,
-    method: ctx.request && ctx.request.method,
+    method: (ctx.request && ctx.request.method) || undefined,
     body: ctx.request && ctx.request.data
   };
 
@@ -14,7 +14,7 @@ const settleResponse = (ctx: MiddlewareContext) => {
     status: ctx.response.status,
     duration: (ctx.time && ctx.time.elapsed !== undefined) ? ctx.time.elapsed : undefined,
     melchettCached: !!ctx.response.melchettCached
-  } : {};
+  } : undefined;
 
   if (!ctx.error && ctx.response) {
     return Promise.resolve({ request, response });
