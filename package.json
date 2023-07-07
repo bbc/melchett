@@ -6,7 +6,7 @@
     "types": "lib/global.d.ts",
     "scripts": {
         "build": "rm -rf dist/ && npm run compile",
-        "compile": "tsc",
+        "compile": "tsc --project tsconfig.build.json",
         "lint": "eslint lib test --ext .js,.ts,.tsx",
         "pretest": "npm run lint",
         "test": "jest",
