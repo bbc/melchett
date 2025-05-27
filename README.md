@@ -1,5 +1,10 @@
 # Melchett
 
+> [!CAUTION]
+> **DEPRECATED!** ⚠️
+> 
+> This project has been deprecated and is no longer maintained.
+
 A plugin-based HTTP client for NodeJS.
 
 ## `HttpClient`
